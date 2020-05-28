@@ -14,14 +14,7 @@ export const show = ({ params, user }, res, next) => {
   User.findById(params.id === 'me' ? user.id : params.id)
     .then(user => {
       if (!user) return next(resNotFound('Failed to find user'));
-
-      return Group.find({ members: user._id })
-    })
-    .then(groups => {
-      let response = user.view(true)
-      response.groups = groups
-
-      return resOk(res, response);
+      return resOk(res, user.view(true) );
     })
     .catch(next)
   }

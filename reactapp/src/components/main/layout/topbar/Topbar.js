@@ -21,8 +21,8 @@ class Topbar extends Component {
               changeSidebarVisibility={changeSidebarVisibility}
             />
             <div className="topbar__logo">
-              <span className="account__logo">Chatter
-                <span className='account__logo-accent2'>Box</span>
+              <span className="account__logo">Stock
+                <span className='account__logo-accent2'>Falafel</span>
               </span> 
             </div>           
           </div>
