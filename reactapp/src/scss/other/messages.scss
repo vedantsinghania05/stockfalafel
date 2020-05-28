@@ -1,0 +1,44 @@
+.poster {
+  font-size: 13px;
+  font-weight: bold;
+  text-transform: capitalize;
+}
+
+.content {
+  font-size: 13px;
+  height: auto;
+  max-width: 800px;
+  padding-bottom: 7.5px;
+}
+
+.msginput {
+  width: 800px;
+}
+
+.sidebar__scroll1 {
+  width: 810px;
+
+  & > div {
+    height: calc(100vh - 200px);
+  }
+
+  .scrollbar-track {
+
+    &.scrollbar-track-y {
+      width: 6px;
+
+    }
+
+    &.scrollbar-track-x {
+      display: none !important;
+    }
+  }
+
+  .scrollbar-thumb {
+    opacity: 0.3;
+    width: 6px;
+    cursor: pointer;
+
+  }
+}
+
