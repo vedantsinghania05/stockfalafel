@@ -2,8 +2,6 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import menu from '../../../menu.png'
 
-// const icon = `${process.env.PUBLIC_URL}/img/burger.svg`;
-
 class TopbarSidebarButton extends Component {
   static propTypes = {
     changeMobileSidebarVisibility: PropTypes.func.isRequired,

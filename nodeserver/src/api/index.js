@@ -1,8 +1,6 @@
 import { Router } from 'express'
-import group from './group'
 import user from './user'
 import auth from './auth'
-import message from './message'
 
 const router = new Router()
 
@@ -30,8 +28,6 @@ const router = new Router()
  * @apiParam {String[]} [fields] Fields to be returned.
  */
 router.use('/users', user)
-router.use('/groups', group)
 router.use('/auth', auth)
-router.use('/messages', message)
 
 export default router

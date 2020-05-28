@@ -1,6 +1,5 @@
 import { resInternal, resOk, resNotFound, resNoContent, resCreated } from '../../services/response/'
 import { User } from '.'
-import { Group } from '../group'
 import { sign } from '../../services/jwt'
 
 export const index = ({ querymen: { query, select, cursor } }, res, next) =>
@@ -10,8 +9,6 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) =>
       return resOk(res, users.map(user => user.view()));
     })
     .catch(next)
-
-const ObjectId = require('mongodb').ObjectID
 
 export const show = ({ params, user }, res, next) => {
   User.findById(params.id === 'me' ? user.id : params.id)
@@ -58,13 +55,6 @@ export const update = ({ params, body, user }, res, next) =>
       return resOk(res, user.view(true));
     })
     .catch(next)
-
-export const getValidUsers = ({ body }, res, next) => {
-  User.find({ email: { $in: body.emails } })
-    .then(users => {
-      return resOk(res, users.map(u => u.view(true)))
-    })
-}
 
 export const updatePassword = ({ params, body, user }, res, next) =>
   User.findById(params.id === 'me' ? user.id : params.id)
