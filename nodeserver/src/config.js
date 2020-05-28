@@ -33,7 +33,7 @@ const config = {
   test: { },
   development: {
     mongo: {
-      uri: 'mongodb://localhost/kidcoders-dev',
+      uri: 'mongodb://localhost/stockfalafel-dev',
       options: {
         debug: true
       }
