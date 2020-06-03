@@ -81,7 +81,7 @@ export const deleteUser  = (id, token, successCbk, errorCbk) => {
   .catch(errorCbk);
 }
 
-const API_KEY = 'HGJWFG4N8AQ66ICD';
+const API_KEY = 'W38AUXAONTSI5GQL';
 
 
 export const getStock = (company, successCbk, errorCbk) => {
