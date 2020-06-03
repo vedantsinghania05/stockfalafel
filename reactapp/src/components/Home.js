@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { Form, Input } from 'reactstrap'
 import { getStock } from '../nodeserverapi'
 
 class Stock extends Component {
@@ -16,6 +17,7 @@ class Stock extends Component {
   }
 
   fetchStock = () => {
+
     let {company} = this.state
     getStock(company,
       response => {
@@ -24,7 +26,13 @@ class Stock extends Component {
       error => {
         console.log(error.message)
       }
-    )
+    )    
+
+  }
+
+  preventRefreshForFetch = (e) => {
+    e.preventDefault()
+    this.fetchStock()
   }
 
   render() {
@@ -32,8 +40,11 @@ class Stock extends Component {
     return (
       <div>
         <h1>Stock Market</h1>
-        <input type='string' value={company} onChange={this.onChangeCompany}/>
-        <button onClick={() => this.fetchStock()}>Update Stock</button>
+
+        <Form onSubmit={this.preventRefreshForFetch}>
+          <Input type='string' value={company} onChange={this.onChangeCompany}/>
+        </Form>
+
       </div>
     )
   }
