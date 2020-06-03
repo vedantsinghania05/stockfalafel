@@ -81,3 +81,18 @@ export const deleteUser  = (id, token, successCbk, errorCbk) => {
   .catch(errorCbk);
 }
 
+const API_KEY = 'HGJWFG4N8AQ66ICD';
+
+
+export const getStock = (company, successCbk, errorCbk) => {
+  let stockSymbol = company
+  let API_CALL = `https://www.alphavantage.co/query?function=TIME_SERIES_WEEKLY_ADJUSTED&symbol=${stockSymbol}&outputsize=compact&apikey=${API_KEY}`;
+  axiosInstance.get(API_CALL, 
+    {
+      company: company
+    } 
+  )
+  .then(successCbk)
+  .catch(errorCbk)
+}
+

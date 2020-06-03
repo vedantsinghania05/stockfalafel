@@ -1,21 +1,42 @@
 import React, { Component } from 'react';
-import { connect } from 'react-redux';
-import { signedInUserMstp, signedInUserMdtp } from '../redux/containers/SignedInUserCtr';
-import { Col, Row, Card, Container } from 'reactstrap';
+import { getStock } from '../nodeserverapi'
 
-class Home extends Component {
+class Stock extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { company: 'AMZN' }
+  }
+
+  componentDidMount() {
+    this.fetchStock();
+  }
+
+  onChangeCompany = (e) => {
+    this.setState({company: e.target.value})
+  }
+
+  fetchStock = () => {
+    let {company} = this.state
+    getStock(company,
+      response => {
+        console.log(response.data)
+      },
+      error => {
+        console.log(error.message)
+      }
+    )
+  }
+
   render() {
+    const {company} = this.state
     return (
-      <Container className="dashboard">
-        <Row>
-          <Col md={12}>
-            <Card>              
-            </Card>
-          </Col>
-        </Row>
-      </Container>
-    );
+      <div>
+        <h1>Stock Market</h1>
+        <input type='string' value={company} onChange={this.onChangeCompany}/>
+        <button onClick={() => this.fetchStock()}>Update Stock</button>
+      </div>
+    )
   }
 }
 
-export default connect(signedInUserMstp, signedInUserMdtp)(Home);
+export default Stock;
