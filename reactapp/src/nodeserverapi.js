@@ -86,7 +86,7 @@ const API_KEY = 'W38AUXAONTSI5GQL';
 
 export const getStock = (company, successCbk, errorCbk) => {
   let stockSymbol = company
-  let API_CALL = `https://www.alphavantage.co/query?function=TIME_SERIES_WEEKLY_ADJUSTED&symbol=${stockSymbol}&outputsize=compact&apikey=${API_KEY}`;
+  let API_CALL = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=${stockSymbol}&outputsize=compact&apikey=${API_KEY}`;
   axiosInstance.get(API_CALL, 
     {
       company: company
