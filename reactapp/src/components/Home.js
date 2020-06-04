@@ -20,13 +20,11 @@ class Stock extends Component {
   fetchStock = () => {
     let {company} = this.state
     const pointerToThis = this;
-    console.log(pointerToThis);
     let stockChartXValuesFunction = [];
     let stockChartYValuesFunction = [];
 
     getStock(company,
       response => {
-        console.log(response.data)
         for(var key in response.data['Time Series (Daily)']) {
           stockChartXValuesFunction.push(key);
           stockChartYValuesFunction.push(response.data['Time Series (Daily)'][key]['1. open']);
@@ -34,7 +32,6 @@ class Stock extends Component {
         pointerToThis.setState({stockChartXValues: stockChartXValuesFunction, stockChartYValues: stockChartYValuesFunction})
       },
       error => {
-        console.log(error.message)
       }
     )    
 
@@ -48,7 +45,7 @@ class Stock extends Component {
   render() {
     const { company } = this.state
     return (
-      <div>
+      <Container className='dashboard'>
         <Plot
           data={[
             {
@@ -64,7 +61,7 @@ class Stock extends Component {
         <Form onSubmit={this.preventRefreshForFetch}>
           <Input type='string' placeholder='Hit enter to get data' value={company} onChange={this.onChangeCompany}/>
         </Form>
-      </div>
+      </Container>
     )
   }
 }
