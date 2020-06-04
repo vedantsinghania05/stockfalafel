@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
-import { Form, Input } from 'reactstrap'
+import { Form, Input, Container } from 'reactstrap'
 import { getStock } from '../nodeserverapi'
 
 class Stock extends Component {
   constructor(props) {
     super(props);
-    this.state = { company: 'AMZN' }
+    this.state = { company: 'AMZN', stockChartXValues: [], stockChartYValues: [] }
   }
 
   componentDidMount() {
@@ -17,11 +17,21 @@ class Stock extends Component {
   }
 
   fetchStock = () => {
-
     let {company} = this.state
+    const pointerToThis = this;
+    console.log(pointerToThis);
+    let stockChartXValuesFunction = [];
+    let stockChartYValuesFunction = [];
+
     getStock(company,
       response => {
         console.log(response.data)
+        for(var key in response.data['Time Series (Daily)']) {
+          stockChartXValuesFunction.push(key);
+          stockChartYValuesFunction.push(response.data['Time Series (Daily)'][key]['1.open']);
+        }
+        // console.log(stockChartXValuesFunction);
+        pointerToThis.setState({stockChartXValues: stockChartXValuesFunction, stockChartYValues: stockChartYValuesFunction})
       },
       error => {
         console.log(error.message)
@@ -38,14 +48,14 @@ class Stock extends Component {
   render() {
     const {company} = this.state
     return (
-      <div>
-        <h1>Stock Market</h1>
+      <Container className='dashboard'>
 
+        <h3>Stock Tracker</h3>
         <Form onSubmit={this.preventRefreshForFetch}>
-          <Input type='string' value={company} onChange={this.onChangeCompany}/>
+          <Input type='string' placeholder='Hit enter to get data' value={company} onChange={this.onChangeCompany}/>
         </Form>
 
-      </div>
+      </Container>
     )
   }
 }
