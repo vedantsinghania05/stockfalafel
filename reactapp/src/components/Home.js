@@ -3,7 +3,7 @@ import { Form, Input, Container, Alert, Card, CardBody } from 'reactstrap'
 import { getStock } from '../nodeserverapi'
 import Plot from 'react-plotly.js'
 
-class Stock extends Component {
+class Home extends Component {
   constructor(props) {
     super(props);
     this.state = { company: 'AMZN', stockChartXValues: [], stockChartYValues: [], symbol: '', displayApiMax: false }
@@ -70,4 +70,4 @@ class Stock extends Component {
     )
   }
 }
-export default Stock;
+export default Home;
