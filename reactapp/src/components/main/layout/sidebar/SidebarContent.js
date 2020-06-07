@@ -1,14 +1,8 @@
-import React, { Component } from "react";
-import PropTypes from "prop-types";
-import { connect } from "react-redux";
-import { signedInUserMstp, signedInUserMdtp } from "../../../../redux/containers/SignedInUserCtr";
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+import SidebarLink from './SidebarLink';
 
 class SidebarContent extends Component {
-  constructor() {
-    super();
-    this.state = { groupList: [], groupsInitUsers: [], toggle: false };
-  }
-
   static propTypes = {
     onClick: PropTypes.func.isRequired,
   };
@@ -20,10 +14,13 @@ class SidebarContent extends Component {
 
   render() {
     return (
-      <span>
-      </span>
+      <div className="sidebar__content">
+        <ul className="sidebar__block">
+          <SidebarLink title="Home" route="/" onClick={this.hideSidebar} />
+        </ul>
+      </div>
     );
   }
 }
 
-export default connect(signedInUserMstp, signedInUserMdtp)(SidebarContent);
+export default SidebarContent;

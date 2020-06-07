@@ -1,41 +1,38 @@
 import React, { Component } from 'react';
-import { Form, Input, Container } from 'reactstrap'
+import { Form, Input, Container, Alert, Card, CardBody } from 'reactstrap'
 import { getStock } from '../nodeserverapi'
 import Plot from 'react-plotly.js'
 
-class Stock extends Component {
+class Home extends Component {
   constructor(props) {
     super(props);
-    this.state = { company: 'AMZN', stockChartXValues: [], stockChartYValues: [] }
+    this.state = { company: 'AMZN', stockChartXValues: [], stockChartYValues: [], symbol: '', displayApiMax: false }
   }
 
-  componentDidMount() {
-    this.fetchStock();
+  componentDidMount() { 
+    this.fetchStock() 
   }
 
-  onChangeCompany = (e) => {
-    this.setState({company: e.target.value})
-  }
+  onChangeCompany = (e) => this.setState({ company: e.target.value })
 
   fetchStock = () => {
-    let {company} = this.state
-    const pointerToThis = this;
-    let stockChartXValuesFunction = [];
-    let stockChartYValuesFunction = [];
-
+    let { company } = this.state
+    let stockChartXValuesFunction = [], stockChartYValuesFunction = []
     getStock(company,
       response => {
-        console.log(response.data)
-        for(var key in response.data['Time Series (Daily)']) {
-          stockChartXValuesFunction.push(key);
-          stockChartYValuesFunction.push(response.data['Time Series (Daily)'][key]['1. open']);
-        }
-        pointerToThis.setState({stockChartXValues: stockChartXValuesFunction, stockChartYValues: stockChartYValuesFunction})
+        if (response.data.Note) {
+          this.setState({displayApiMax: true})
+        } else {
+          for(var key in response.data['Time Series (Daily)']) {
+            stockChartXValuesFunction.push(key);
+            stockChartYValuesFunction.push(response.data['Time Series (Daily)'][key]['1. open']);
+          }
+          this.setState({ })
+          this.setState({stockChartXValues: stockChartXValuesFunction, stockChartYValues: stockChartYValuesFunction, symbol: ": " + response.data['Meta Data']["2. Symbol"].toUpperCase()})
+        } 
       },
-      error => {
-      }
+      error => {}
     )    
-
   }
 
   preventRefreshForFetch = (e) => {
@@ -45,27 +42,33 @@ class Stock extends Component {
   }
 
   render() {
-    const { company } = this.state
+    const { company, stockChartXValues, stockChartYValues, symbol, displayApiMax } = this.state
     return (
       <Container className='dashboard'>
-        <Plot
-          data={[
-            {
-              x: this.state.stockChartXValues,
-              y: this.state.stockChartYValues,
-              type: 'scatter',
-              mode: 'lines+markers',
-              marker: {color: 'red'},
-            },
-          ]}
-          layout={ {width: 720, height: 440, title: 'Falafel Finder'} }
-      />
-        <Form onSubmit={this.preventRefreshForFetch}>
-          <Input type='string' placeholder='Hit enter to get data' value={company} onChange={this.onChangeCompany}/>
-        </Form>
+        <Card>
+          <CardBody>
+
+            <p>Home</p>
+
+            {displayApiMax && <Alert color='danger'>Please try again in one minute</Alert>}
+            <Plot
+              data={[{
+                x: stockChartXValues,
+                y: stockChartYValues,
+                mode: 'lines+markers',
+                marker: {color: '#8ED1FC'}
+              }]}
+              layout={{ title: `Falafel Finder${symbol}` }}
+            />
+
+            <Form onSubmit={this.preventRefreshForFetch}>
+              <Input type='string' placeholder='Hit enter to get data' value={company} onChange={this.onChangeCompany}/>
+            </Form>
+
+          </CardBody>
+        </Card>
       </Container>
     )
   }
 }
-
-export default Stock;
+export default Home;

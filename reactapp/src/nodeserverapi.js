@@ -1,6 +1,5 @@
 const axios = require('axios')
 let axiosInstance = axios.create();
-
 const masterKey = 'LwwGrzyouCKOo1tv2AGBJKBRwYy6qfjA';
 const nodeserverUrl = 'http://localhost:9000';
 
@@ -18,7 +17,6 @@ export const signInUser = (username, password, successCbk, errorCbk) => {
   .then(successCbk)
   .catch(errorCbk);
 }
-
 
 /**
  * User
@@ -81,17 +79,11 @@ export const deleteUser  = (id, token, successCbk, errorCbk) => {
   .catch(errorCbk);
 }
 
-const API_KEY = 'W38AUXAONTSI5GQL';
-
-
+/**
+ * Stock
+ */
 export const getStock = (company, successCbk, errorCbk) => {
-  let stockSymbol = company
-  let API_CALL = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=${stockSymbol}&outputsize=compact&apikey=${API_KEY}`;
-  axiosInstance.get(API_CALL, 
-    {
-      company: company
-    } 
-  )
+  axiosInstance.get(`https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=${company}&outputsize=compact&apikey=W38AUXAONTSI5GQL`)
   .then(successCbk)
   .catch(errorCbk)
 }
