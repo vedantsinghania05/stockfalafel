@@ -25,6 +25,7 @@ class Stock extends Component {
 
     getStock(company,
       response => {
+        console.log(response.data)
         for(var key in response.data['Time Series (Daily)']) {
           stockChartXValuesFunction.push(key);
           stockChartYValuesFunction.push(response.data['Time Series (Daily)'][key]['1. open']);
@@ -39,6 +40,7 @@ class Stock extends Component {
 
   preventRefreshForFetch = (e) => {
     e.preventDefault()
+
     this.fetchStock()
   }
 
