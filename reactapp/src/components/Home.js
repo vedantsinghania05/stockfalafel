@@ -40,6 +40,26 @@ class Home extends Component {
   //   this.fetchStock() 
   // }
 
+  fetchStock = () => {
+    let { company } = this.state
+    let stockChartXValuesFunction = [], stockChartYValuesFunction = []
+    getStock(company,
+      response => {
+        console.log(response.data)
+        if (response.data.Note) {
+          this.setState({displayApiMax: true})
+        } else {
+          for(var key in response.data['Time Series (Daily)']) {
+            stockChartXValuesFunction.push(key);
+            stockChartYValuesFunction.push(response.data['Time Series (Daily)'][key]['1. open']);
+          }
+          this.setState({ })
+          this.setState({stockChartXValues: stockChartXValuesFunction, stockChartYValues: stockChartYValuesFunction, symbol: ": " + response.data['Meta Data']["2. Symbol"].toUpperCase()})
+        } 
+      },
+      error => {}
+    )    
+  }
   // onChangeCompany = (e) => this.setState({ company: e.target.value })
 
   // fetchStock = () => {
