@@ -87,5 +87,3 @@ export const getStock = (company, successCbk, errorCbk) => {
   .then(successCbk)
   .catch(errorCbk)
 }
-
-
