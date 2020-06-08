@@ -83,7 +83,7 @@ export const deleteUser  = (id, token, successCbk, errorCbk) => {
  * Stock
  */
 export const getStock = (company, successCbk, errorCbk) => {
-  axiosInstance.get(`https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=${company}&outputsize=compact&apikey=W38AUXAONTSI5GQL`)
+  axiosInstance.get(`https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=${company}&outputsize=full&apikey=W38AUXAONTSI5GQL`)
   .then(successCbk)
   .catch(errorCbk)
 }

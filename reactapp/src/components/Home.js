@@ -20,6 +20,7 @@ class Home extends Component {
     let stockChartXValuesFunction = [], stockChartYValuesFunction = []
     getStock(company,
       response => {
+        console.log(response.data)
         if (response.data.Note) {
           this.setState({displayApiMax: true})
         } else {
