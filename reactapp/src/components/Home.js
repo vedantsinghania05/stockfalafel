@@ -25,7 +25,8 @@ class Home extends Component {
               volume: response.data['Time Series (Daily)'][a]['6. volume']
             })
           }
-          //put post function here
+          this.saveStocks(data)
+
           console.log(data)
           data = []
         },
@@ -34,6 +35,25 @@ class Home extends Component {
         }
       )
     }
+  }
+
+  saveStocks = (stockList) => {
+
+    for (let stock of stockList) {
+
+      console.log(stock)
+
+      saveStock(stock.symbol, stock.date, stock.open, stock.high, stock.low, stock.close, stock.volume,
+        response => {
+          console.log('YES!!->', response.data)
+        },
+        error => {
+          console.log(error.message)
+        }
+      )
+
+    }
+
   }
 
   /* componentDidMount() { 
