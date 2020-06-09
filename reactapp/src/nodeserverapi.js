@@ -82,6 +82,24 @@ export const deleteUser  = (id, token, successCbk, errorCbk) => {
 /**
  * Stock
  */
+
+export const saveStock = (symbol, date, openVal, highVal, lowVal, closeVal, volumeVal, successCbk, errorCbk) => {
+  axiosInstance.post(nodeserverUrl + '/stocks',
+    {
+      access_token: masterKey,
+      symbol: symbol,
+      date: date,
+      open: openVal,
+      high: highVal,
+      low: lowVal,
+      close: closeVal,
+      volume: volumeVal
+    }
+  )
+  .then(successCbk)
+  .catch(errorCbk)
+}
+
 export const getStock = (company, successCbk, errorCbk) => {
   axiosInstance.get(`https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=${company}&outputsize=full&apikey=W38AUXAONTSI5GQL`)
   .then(successCbk)

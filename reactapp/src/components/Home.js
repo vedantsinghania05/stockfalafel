@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import {Container, Card, CardBody, Button, Form, Input } from 'reactstrap'
-import { getStock } from '../nodeserverapi'
+import { getStock, saveStock } from '../nodeserverapi'
 import Plot from 'react-plotly.js'
 
 class Home extends Component {
@@ -23,9 +23,19 @@ class Home extends Component {
     }
   }
 
-  // componentDidMount() { 
-  //   this.fetchStock() 
-  // }
+  /* componentDidMount() { 
+     console.log('mounting')
+     //this.fetchStock() 
+
+     saveStock('test symbol', Date('6-6-20'), 20.1, 20.2, 20.3, 20.4, 20400,
+      response => {
+        console.log('YES!!->', response.data)
+      },
+      error => {
+        console.log(error.message)
+      }
+     )
+   }*/
 
   fetchStock = () => {
     let { company } = this.state
