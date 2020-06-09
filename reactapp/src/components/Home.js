@@ -14,7 +14,20 @@ class Home extends Component {
     for (let i in company) {
       getStock(company[i], 
         response => {
-          console.log(response.data)
+          for (let a in response.data['Time Series (Daily)']) {
+            data.push({
+              symbol: response.data['Meta Data']["2. Symbol"], 
+              date: a,
+              open: response.data['Time Series (Daily)'][a]['1. open'],
+              high: response.data['Time Series (Daily)'][a]['2. high'],
+              low: response.data['Time Series (Daily)'][a]['3. low'],
+              close: response.data['Time Series (Daily)'][a]['4. close'],
+              volume: response.data['Time Series (Daily)'][a]['6. volume']
+            })
+          }
+          //put post function here
+          console.log(data)
+          data = []
         },
         error => {
           console.log(error.message)
@@ -94,7 +107,7 @@ class Home extends Component {
           <CardBody>
 
             <p>Home</p>
-            <Button onClick={this.updateStock}>Update Stocks</Button>
+            <Button size='sm' color='primary' onClick={this.updateStock}>Update Stocks</Button>
 
             {/* {displayApiMax && <Alert color='danger'>Please try again in one minute</Alert>}
             <Plot
