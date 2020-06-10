@@ -100,8 +100,21 @@ export const saveStock = (symbol, date, openVal, highVal, lowVal, closeVal, volu
   .catch(errorCbk)
 }
 
-export const getStock = (company, successCbk, errorCbk) => {
-  axiosInstance.get(`https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=${company}&outputsize=full&apikey=W38AUXAONTSI5GQL`)
+export const getStock = (token, company, successCbk, errorCbk) => {
+  axiosInstance.get(nodeserverUrl + '/stocks/?company=' + company,
+    { headers: { Authorization: 'Bearer ' + token } }
+  )
+  .then(successCbk)
+  .catch(errorCbk)
+}
+
+export const saveManyStocks = (stockData, successCbk, errorCbk) => {
+  axiosInstance.post(nodeserverUrl + '/stocks/bulk',
+    {
+      access_token: masterKey,
+      stockData: stockData
+    }
+  )
   .then(successCbk)
   .catch(errorCbk)
 }

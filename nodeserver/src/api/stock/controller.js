@@ -1,13 +1,52 @@
 import { resInternal, resOk, resNotFound, resNoContent, resCreated } from '../../services/response/'
 import { Stock } from '.'
 
-export const create = ({ body }, res, next) => {
-	let fields = { symbol: body.symbol, date: body.date, open: body.open, high: body.high, low: body.low, close: body.close, volume: body.volume }
-	
-	Stock.create(fields)
-		.then(stock => {
-			if (!stock) return next(resInternal('Failed to create stock'))
-			return resCreated(res, stock.view(true))
+const axios = require('axios')
+//let axiosInstance = axios.create();
+
+export const getStockData = async ({ query }, res, next) => {
+	let stockList = []
+
+	console.log('>>>>>>>>> companies', query)
+
+	for (let company of query.company) {
+		let result = await fn(company)
+		console.log('>>>> reuslt', result)
+		if (result && result.data) {
+			stockList.push(result)
+		}
+	}
+
+	// post data here using stocklist :)x1000
+	/*
+ 	data.push({
+		symbol: response.data['Meta Data']["2. Symbol"], 
+		date: a,
+		open: response.data['Time Series (Daily)'][a]['1. open'],
+		high: response.data['Time Series (Daily)'][a]['2. high'],
+		low: response.data['Time Series (Daily)'][a]['3. low'],
+		close: response.data['Time Series (Daily)'][a]['4. close'],
+		volume: response.data['Time Series (Daily)'][a]['6. volume']
+	})
+	*/
+
+	console.log('>>>>>>>>>> stocks', stockList)
+	return resOk(res, stockList)
+}
+
+export const bulkInsert = ({ body }, res, next) => {
+	Stock.insertMany(body.stockData)
+		.then(stocks => {
+			if (!stocks) return next(resInternal('Failed to create stocks'))
+			return resCreated(res, stocks.map(s => s.view(true)))
 		})
 		.catch(next)
-}   
+}
+
+const fn = (company) => {
+	return new Promise((resolve, reject) => {
+		axios.get(`https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=${company}&outputsize=full&apikey=W38AUXAONTSI5GQL`)
+		.then(response => resolve(response))
+		.catch(error => reject(error))		
+	})
+}
