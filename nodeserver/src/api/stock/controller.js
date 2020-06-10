@@ -8,14 +8,17 @@ export const getStockData = async ({ query }, res, next) => {
 	let stockList = []
 
 	console.log('>>>>>>>>> companies', query)
+	var splitSymbols = query.company.split(",")
+	console.log(splitSymbols)
 
-	for (let company of query.company) {
-		let result = await fn(company)
-		console.log('>>>> reuslt', result)
-		if (result && result.data) {
-			stockList.push(result)
-		}
-	}
+	 for (let company of splitSymbols) {
+	 	let result = await fn(company)
+	 	console.log('>>>> reuslt', result)
+	 	if (result && result.data) {
+	 		stockList.push(result.data)
+	 	}
+	 }
+	 
 
 	// post data here using stocklist :)x1000
 	/*
@@ -30,8 +33,8 @@ export const getStockData = async ({ query }, res, next) => {
 	})
 	*/
 
-	console.log('>>>>>>>>>> stocks', stockList)
-	return resOk(res, stockList)
+	// console.log('>>>>>>>>>> stocks', stockList[0]['Meta Data'])
+	// return resOk(res, stockList)
 }
 
 export const bulkInsert = ({ body }, res, next) => {
