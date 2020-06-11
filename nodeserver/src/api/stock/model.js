@@ -1,8 +1,10 @@
 import mongoose, { Schema } from 'mongoose'
 
 const stockSchema = new Schema({
-  symbol: {
-    type: String
+  company: {
+    type: Schema.ObjectId,
+    ref: "Company",
+    index: true
   },
   date: {
     type: Date
