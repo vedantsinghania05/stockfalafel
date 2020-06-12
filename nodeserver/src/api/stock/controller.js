@@ -7,34 +7,39 @@ const axios = require('axios')
 export const getStockData = async ({ query }, res, next) => {
 	let stockList = []
 
-	console.log('>>>>>>>>> companies', query)
 	var splitSymbols = query.company.split(",")
-	console.log(splitSymbols)
 
-	 for (let company of splitSymbols) {
+	for (let company of splitSymbols) {
 	 	let result = await fn(company)
-	 	console.log('>>>> reuslt', result)
 	 	if (result && result.data) {
 	 		stockList.push(result.data)
 	 	}
-	 }
-	 
+	}
+	let formattedStockList = []
 
-	// post data here using stocklist :)x1000
-	/*
- 	data.push({
-		symbol: response.data['Meta Data']["2. Symbol"], 
-		date: a,
-		open: response.data['Time Series (Daily)'][a]['1. open'],
-		high: response.data['Time Series (Daily)'][a]['2. high'],
-		low: response.data['Time Series (Daily)'][a]['3. low'],
-		close: response.data['Time Series (Daily)'][a]['4. close'],
-		volume: response.data['Time Series (Daily)'][a]['6. volume']
+	for (let stock of stockList) {
+		 for (let a in stock['Time Series (Daily)']) {
+			 formattedStockList.push({
+				symbol: stock['Meta Data']["2. Symbol"], 
+				date: a,
+				open: stock['Time Series (Daily)'][a]['1. open'],
+				high: stock['Time Series (Daily)'][a]['2. high'],
+				low: stock['Time Series (Daily)'][a]['3. low'],
+				close: stock['Time Series (Daily)'][a]['4. close'],
+				volume: stock['Time Series (Daily)'][a]['6. volume']
+			})
+		 }
+		
+	}
+	console.log(formattedStockList)
+
+	Stock.insertMany(formattedStockList)
+	.then(stocks => {
+		if (!stocks) return next(resInternal('Failed to create stocks'))
+		return resCreated(res, stocks.map(s => s.view(true)))
 	})
-	*/
+	.catch(next)
 
-	// console.log('>>>>>>>>>> stocks', stockList[0]['Meta Data'])
-	// return resOk(res, stockList)
 }
 
 export const bulkInsert = ({ body }, res, next) => {
