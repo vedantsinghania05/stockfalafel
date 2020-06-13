@@ -68,7 +68,7 @@ export const getValidUsers = (token, emailsList, successCbk, errorCbk) => {
     }
   )
   .then(successCbk)
-  .catch(errorCbk)
+  .catch(errorCbk);
 }
 
 export const deleteUser  = (id, token, successCbk, errorCbk) => {
@@ -82,39 +82,31 @@ export const deleteUser  = (id, token, successCbk, errorCbk) => {
 /**
  * Stock
  */
-
-export const saveStock = (symbol, date, openVal, highVal, lowVal, closeVal, volumeVal, successCbk, errorCbk) => {
-  axiosInstance.post(nodeserverUrl + '/stocks',
-    {
-      access_token: masterKey,
-      symbol: symbol,
-      date: date,
-      open: openVal,
-      high: highVal,
-      low: lowVal,
-      close: closeVal,
-      volume: volumeVal
-    }
-  )
-  .then(successCbk)
-  .catch(errorCbk)
-}
-
-export const getStock = (token, company, successCbk, errorCbk) => {
-  axiosInstance.get(nodeserverUrl + '/stocks/?company=' + company,
+export const getStock = (token, tickers, successCbk, errorCbk) => {
+  axiosInstance.get(nodeserverUrl + '/stocks/?company=' + tickers,
     { headers: { Authorization: 'Bearer ' + token } }
   )
   .then(successCbk)
-  .catch(errorCbk)
+  .catch(errorCbk);
 }
 
-export const saveManyStocks = (stockData, successCbk, errorCbk) => {
-  axiosInstance.post(nodeserverUrl + '/stocks/bulk',
+/**
+ * Company
+ */
+export const createCompany = (tickers, successCbk, errorCbk) => {
+  axiosInstance.post(nodeserverUrl + '/companies',
     {
       access_token: masterKey,
-      stockData: stockData
-    }
+      ticker: tickers    },
   )
   .then(successCbk)
-  .catch(errorCbk)
+  .catch(errorCbk);
+}
+
+export const getAllCompany = (token, successCbk, errorCbk) => {
+  axiosInstance.get(nodeserverUrl + '/companies',
+    { headers: { Authorization: 'Bearer ' + token } }
+  )
+  .then(successCbk)
+  .catch(errorCbk);
 }

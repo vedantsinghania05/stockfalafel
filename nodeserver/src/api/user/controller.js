@@ -11,7 +11,7 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) =>
     .catch(next)
 
 export const show = ({ params, user }, res, next) => {
-  User.findById(params.id === 'me' ? user.id : params.id)
+  User.findById(params.id === 'me' ? user.id : params.id)   
     .then(user => {
       if (!user) return next(resNotFound('Failed to find user'));
       return resOk(res, user.view(true) );
