@@ -1,7 +1,7 @@
 import mongoose, { Schema } from 'mongoose'
 
 const stockSchema = new Schema({
-  symbol: {
+  ticker: {
     type: String
   },
  /* company: {
@@ -34,7 +34,7 @@ const stockSchema = new Schema({
 stockSchema.methods = {
   view (full) {
     let view = {}
-    view.symbol  = this.symbol;
+    view.ticker  = this.ticker;
     view.date  = this.date;
     view.open  = this.open;
     view.high  = this.high;
