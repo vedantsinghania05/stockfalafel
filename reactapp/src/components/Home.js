@@ -7,7 +7,7 @@ import { signedInUserMstp, signedInUserMdtp, getUserToken } from '../redux/conta
 class Home extends Component {
   constructor(props) {
     super(props);
-    this.state = { tickers: ["COF", "FB", "AMZN", "AAPL", "GOOGL"], companyList: [], companiesStr: '' }
+    this.state = { companyList: [], companiesStr: '' }
   }
 
   componentDidMount = () => {
@@ -15,7 +15,6 @@ class Home extends Component {
   }
 
   onChangeCompaniesStr = (e) => {
-    console.log(e.target.value)
     this.setState({ companiesStr: e.target.value })
   }
 
@@ -24,13 +23,27 @@ class Home extends Component {
     const { companiesStr } = this.state;
 
     let companiesList = companiesStr.split(', ')
+    let newCompaniesList = []
+    let counter = 0
 
-    this.setState({ companiesStr: '', companies: companiesList })
+    for (let i in companiesList) {
+      if (counter < 5) {
+        newCompaniesList.push(companiesList[i])
+        counter++
+      }
+    }
+
+    this.createCompanies(newCompaniesList)
+    this.setState({ companiesStr: ''})
   }
 
   updateStock = () => {
-    let { tickers } = this.state
-    getStock(getUserToken(), tickers, 
+    let { companyList } = this.state
+    let formattedCompanyList = []
+    for (let i in companyList) {
+      formattedCompanyList.push(companyList[i].ticker)
+    }
+    getStock(getUserToken(), formattedCompanyList, 
       response => {
         console.log('response->', response.data)
       },
@@ -40,8 +53,8 @@ class Home extends Component {
     )
   }
 
-  createCompanies = () => {
-    let { tickers } = this.state
+  createCompanies = (tickers) => {
+
     createCompany(tickers,
       response => {
         console.log('response->', response.data)
@@ -85,7 +98,6 @@ class Home extends Component {
             <p>Home</p>
 
             <Button size='sm' color='primary' onClick={this.updateStock}>Update Stocks</Button>
-            <Button size='sm' color='primary' onClick={this.createCompanies}>Create Companies</Button>
 
             <Table size='sm'>
               <thead>
