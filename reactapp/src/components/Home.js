@@ -1,116 +1,82 @@
 import React, { Component } from 'react';
-import {Container, Card, CardBody, Button, Form, Input, FormGroup, Label, Table } from 'reactstrap'
-import { connect } from 'react-redux';
-import { getStock, createCompany, getAllCompany } from '../nodeserverapi'
-import { signedInUserMstp, signedInUserMdtp, getUserToken } from '../redux/containers/SignedInUserCtr';
+import { Container, Card, CardBody, Button, Input, Form, Table } from 'reactstrap'
+import Plot from 'react-plotly.js';
 
 class Home extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { companyList: [], companiesStr: '' }
-  }
-
-  componentDidMount = () => {
-    this.getCompanies()
+  constructor() {
+    super();
+    this.state = { userCompanyList: [], showGraph: false, selectedTicker: undefined, stockChartXValues: [], stockChartYValues: [], companiesStr: '' }
   }
 
   onChangeCompaniesStr = (e) => {
-    this.setState({ companiesStr: e.target.value })
+    this.setState({ companiesStr: e.target.value.toUpperCase()})
   }
 
-  addCompanies = (e) => {
+  chooseCompanies = (e) => {
+    let { companiesStr, userCompanyList } = this.state
     e.preventDefault()
-    const { companiesStr } = this.state;
-
-    let companiesList = companiesStr.split(', ')
-    let newCompaniesList = []
-    let counter = 0
-
-    for (let i in companiesList) {
-      if (counter < 5) {
-        newCompaniesList.push(companiesList[i])
-        counter++
-      }
+    for (let i of companiesStr.split(', ')) {
+      userCompanyList.push(i)
+      this.setState({companiesStr: ''})
     }
-
-    this.createCompanies(newCompaniesList)
-    this.setState({ companiesStr: ''})
   }
 
-  updateStock = () => {
-    let { companyList } = this.state
-    let formattedCompanyList = []
-    for (let i in companyList) {
-      formattedCompanyList.push(companyList[i].ticker)
+  sendtoGraph = (companyTicker) => {
+    let { stockChartXValues, stockChartYValues } = this.state
+    let testData = [{date: "2020-6-15", open: 111.11}, {date: "2020-6-14", open: 50.02}]
+
+    this.setState({ showGraph: true, selectedTicker: companyTicker })
+    for (let i in testData) {
+      stockChartXValues.push(testData[i].date)
+      stockChartYValues.push(testData[i].open)    
     }
-    getStock(getUserToken(), formattedCompanyList, 
-      response => {
-        console.log('response->', response.data)
-      },
-      error => {
-        console.log(error.message)
-      }
-    )
   }
 
-  createCompanies = (tickers) => {
-
-    createCompany(tickers,
-      response => {
-        console.log('response->', response.data)
-        this.setState({ companyList: response.data})
-      },
-      error => {
-        console.log(error.message)
-      }
-    )
-  }
-
-  getCompanies = () => {
-    getAllCompany(getUserToken(),
-      response => {
-        console.log('response->', response.data)
-        this.setState({ companyList: response.data})
-      },
-      error => {
-        console.log(error.message)
-      }
-    )
+  back = () => {
+    this.setState({ showGraph: false})
   }
 
 
   render() {
-    let { companyList, companiesStr } = this.state
+    let { userCompanyList, showGraph, selectedTicker, stockChartXValues, stockChartYValues, companiesStr } = this.state
     return (
       <Container className='dashboard'>
         <Card>
           <CardBody>
 
-            <Form onSubmit={this.addCompanies}>
-              <FormGroup>
-                <Label>Add Companies</Label>
-              </FormGroup>
-              <FormGroup>
-                <Input name='companiesStr' value={companiesStr} onChange={this.onChangeCompaniesStr}/>
-              </FormGroup>
-            </Form>
+              <div className="card__title">
+                <h5 className="bold-text">{showGraph ? <Button size='sm' color='primary' onClick={this.back}>{"<-"}</Button> : "Home"}</h5>
+              </div>
 
-            <p>Home</p>
+              {!showGraph && <div>
+                <Form onSubmit={this.chooseCompanies}>
+                  <Input bsSize='sm' name='companiesStr' placeholder='Enter Companies Here' value={companiesStr} onChange={this.onChangeCompaniesStr}/>
+                </Form>
 
-            <Button size='sm' color='primary' onClick={this.updateStock}>Update Stocks</Button>
+                  <Table size='sm'>
+                  <tbody>
+                    {userCompanyList && userCompanyList.map((company, i) => <tr key={i}>
+                      <td>{company}</td>
+                      <td><Button size='sm' color='primary' onClick={() => this.sendtoGraph(company)}>{"->"}</Button></td>
+                    </tr>)}
+                  </tbody>
+                </Table>
+              </div>}
 
-            <Table size='sm'>
-              <thead>
-                <tr>
-                  <th>Companies</th>
-                </tr>
-              </thead>
-              <tbody>
-                {companyList.map((company, i) => <tr key={i}>
-                  <td>{company.ticker}</td>
-                </tr>)}
-              </tbody>
-            </Table>
+            {showGraph && <div>
+              <Plot
+                data={[
+                  {
+                    x: stockChartXValues,
+                    y: stockChartYValues,
+                    type: 'scatter',
+                    mode: 'lines+markers',
+                    marker: {color: 'red'},
+                  }
+                ]}
+                layout={{width: 720, height: 440, title: selectedTicker}}
+              />
+            </div>}
 
           </CardBody>
         </Card>
@@ -118,4 +84,4 @@ class Home extends Component {
     )
   }
 }
-export default connect(signedInUserMstp, signedInUserMdtp)(Home);
+export default Home;
