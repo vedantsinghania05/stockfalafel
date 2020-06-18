@@ -20,7 +20,7 @@ export const getStockData = async ({ query }, res, next) => {
 	for (let stock of stockList) {
 		 for (let a in stock['Time Series (Daily)']) {
 			 formattedStockList.push({
-				symbol: stock['Meta Data']["2. Symbol"], 
+				ticker: stock['Meta Data']["2. Symbol"], 
 				date: a,
 				open: stock['Time Series (Daily)'][a]['1. open'],
 				high: stock['Time Series (Daily)'][a]['2. high'],
