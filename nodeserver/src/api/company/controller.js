@@ -5,7 +5,7 @@ export const create = ({ body }, res, next) => {
   let fields = []
   for (let i in body.ticker) { fields.push({ ticker: body.ticker[i] }) }
   
-  Company.remove()
+  Company.deleteMany()
     .then(companies => {
       if (!companies) return next(resInternal('Failed to clear database'))
       return Company.insertMany(fields)
