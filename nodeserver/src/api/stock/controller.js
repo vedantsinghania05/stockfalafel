@@ -41,13 +41,17 @@ export const getStockData = async ({ body }, res, next) => {
 		}
 		
 	}
-
-	Stock.insertMany(formattedStockList)
-	.then(stocks => {
-		if (!stocks) return next(resInternal('Failed to create stocks'))
-		return resCreated(res, stocks.map(s => s.view(true)))
-	})
-	.catch(next)
+	console.log(formattedStockList)
+	Stock.deleteMany()
+		.then(stocks => {
+			if (!stocks) return next(resInternal('Failed to remove stocks'))
+			return Stock.insertMany(formattedStockList)
+		})
+		.then(stocks => {
+			if (!stocks) return next(resInternal('Failed to create stocks'))
+			return resCreated(res, stocks.map(s => s.view(true)))
+		})
+		.catch(next)
 
 }
 
