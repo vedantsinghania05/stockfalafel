@@ -49,10 +49,11 @@ export const getUser = (id, token, successCbk, errorCbk) => {
   .catch(errorCbk);
 }
 
-export const updateUser = (id, token, email, successCbk, errorCbk) => {
+export const updateUser = (id, token, email, companies, successCbk, errorCbk) => {
   axiosInstance.put(nodeserverUrl + '/users/' + id,
     {
       email: email,
+      companies: companies,
       access_token: token
     }
   )
@@ -83,11 +84,23 @@ export const deleteUser  = (id, token, successCbk, errorCbk) => {
  * Stock
  */
 export const getStock = (token, tickers, successCbk, errorCbk) => {
-  axiosInstance.get(nodeserverUrl + '/stocks/?company=' + tickers,
-    { headers: { Authorization: 'Bearer ' + token } }
+  axiosInstance.put(nodeserverUrl + '/stocks',
+    {
+      access_token: token,
+      companies: tickers
+    }
   )
   .then(successCbk)
   .catch(errorCbk);
+}
+
+export const getStoredStockData = (id, token, successCbk, errorCbk) => {
+  console.log('***** id: ', id)
+  axiosInstance.get(nodeserverUrl + '/stocks/' + id,
+    { headers: { Authorization: 'Bearer ' + token } }
+  )
+  .then(successCbk)
+  .catch(errorCbk)
 }
 
 /**
@@ -109,4 +122,12 @@ export const getAllCompany = (token, successCbk, errorCbk) => {
   )
   .then(successCbk)
   .catch(errorCbk);
+}
+
+export const getUsersCompanies = (token, successCbk, errorCbk) => {
+  axiosInstance.get(nodeserverUrl + '/companies/user',
+    { headers: { Authorization: 'Bearer ' + token } }
+  )
+  .then(successCbk)
+  .catch(errorCbk)
 }

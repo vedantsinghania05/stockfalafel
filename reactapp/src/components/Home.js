@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
 import { Container, Card, CardBody, Button, Input, Form, Table } from 'reactstrap'
 import Plot from 'react-plotly.js';
+import { signedInUserMstp, signedInUserMdtp, getUserToken } from '../redux/containers/SignedInUserCtr';
+import { connect } from 'react-redux';
+import { updateUser, getStoredStockData, getUser, getUsersCompanies } from '../nodeserverapi'
 
 class Home extends Component {
   constructor() {
@@ -8,32 +11,80 @@ class Home extends Component {
     this.state = { userCompanyList: [], showGraph: false, selectedTicker: undefined, stockChartXValues: [], stockChartYValues: [], companiesStr: '' }
   }
 
+  componentDidMount = () => {
+
+    getUser('me', getUserToken(),
+      response => {
+        let companyIds = []
+        for (let company of response.data.companies) {
+          companyIds.push(company)
+        }
+
+        getUsersCompanies(getUserToken(),
+          response => {
+            console.log('response->', response.data)
+            this.setState({ userCompanyList: response.data })
+          },
+          error => {
+            console.log('error:', error.message)
+          }
+        )
+
+      },
+      error => {
+        console.log('error: ', error.message)
+      }
+    )
+
+  }
+
   onChangeCompaniesStr = (e) => {
     this.setState({ companiesStr: e.target.value.toUpperCase()})
   }
 
   chooseCompanies = (e) => {
-    let { companiesStr, userCompanyList } = this.state
+    let { companiesStr } = this.state
+    let { userInfo } = this.props;
     e.preventDefault()
-    for (let i of companiesStr.split(', ')) {
-      userCompanyList.push(i)
-      this.setState({companiesStr: ''})
-    }
+
+    let companyList = companiesStr.split(', ')
+
+    updateUser(userInfo.id, getUserToken(), userInfo.email, companyList,
+      response => {
+        this.setState({companiesStr: '', userCompanyList: response.data.companies})
+      },
+      error => {
+        console.log('error: ', error.message)
+      }
+    )
+
   }
 
-  sendtoGraph = (companyTicker) => {
+  sendtoGraph = (company) => {
     let { stockChartXValues, stockChartYValues } = this.state
-    let testData = [{date: "2020-6-15", open: 111.11}, {date: "2020-6-14", open: 50.02}]
 
-    this.setState({ showGraph: true, selectedTicker: companyTicker })
-    for (let i in testData) {
-      stockChartXValues.push(testData[i].date)
-      stockChartYValues.push(testData[i].open)    
-    }
+    console.log('>>> company', company)
+
+    getStoredStockData(company.id, getUserToken(),
+      response => {
+        let stockData = []
+        stockData = response.data
+
+        this.setState({ showGraph: true, selectedTicker: company })
+        for (let i in stockData) {
+          stockChartXValues.push(stockData[i].date)
+          stockChartYValues.push(stockData[i].open)    
+        }
+
+      },
+      error => {
+        console.log('error->', error.message)
+      }
+    )
   }
 
   back = () => {
-    this.setState({ showGraph: false})
+    this.setState({ showGraph: false, stockChartXValues: [], stockChartYValues: [] })
   }
 
 
@@ -56,7 +107,7 @@ class Home extends Component {
                   <Table size='sm'>
                   <tbody>
                     {userCompanyList && userCompanyList.map((company, i) => <tr key={i}>
-                      <td>{company}</td>
+                      <td>{company.ticker}</td>
                       <td><Button size='sm' color='primary' onClick={() => this.sendtoGraph(company)}>{"->"}</Button></td>
                     </tr>)}
                   </tbody>
@@ -84,4 +135,4 @@ class Home extends Component {
     )
   }
 }
-export default Home;
+export default connect(signedInUserMstp, signedInUserMdtp)(Home);

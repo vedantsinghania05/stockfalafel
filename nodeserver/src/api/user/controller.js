@@ -1,5 +1,6 @@
 import { resInternal, resOk, resNotFound, resNoContent, resCreated } from '../../services/response/'
 import { User } from '.'
+import { Company } from '../company'
 import { sign } from '../../services/jwt'
 
 export const index = ({ querymen: { query, select, cursor } }, res, next) =>
@@ -35,12 +36,19 @@ export const create = ({ body }, res, next) => {
     .catch(next)
 }
 
-export const update = ({ params, body, user }, res, next) =>
-  User.findById(params.id === 'me' ? user.id : params.id)
+export const update = ({ params, body, user }, res, next) => {
+  let gCompanies = []
+  Company.find({ ticker: {$in: body.companies} })
+    .then(companies => {
+      if (!companies) return next(resInternal('Failed to find companies'))
+      companies.map(c => gCompanies.push(c))
+      return User.findById(params.id === 'me' ? user.id : params.id)
+    })
     .then(user => {
       if (!user) return next(resNotFound('Failed to find user'));
 
       if (body.email) user.email = body.email;
+      if (gCompanies) user.companies = gCompanies;
       return user.save();
     })
     .then(user => {
@@ -48,6 +56,7 @@ export const update = ({ params, body, user }, res, next) =>
       return resOk(res, user.view(true));
     })
     .catch(next)
+  }
 
 export const updatePassword = ({ params, body, user }, res, next) =>
   User.findById(params.id === 'me' ? user.id : params.id)

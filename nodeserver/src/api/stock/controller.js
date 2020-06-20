@@ -2,36 +2,45 @@ import { resInternal, resOk, resNotFound, resNoContent, resCreated } from '../..
 import { Stock } from '.'
 
 const axios = require('axios')
-//let axiosInstance = axios.create();
 
-export const getStockData = async ({ query }, res, next) => {
+export const getStoredStockData = ({ params }, res, next) => {
+	console.log('>>>>> params.id', params.id)
+	Stock.find({ company: params.id })
+		.sort('-date')
+		.then(stocks => {
+			if (!stocks) return next(resInternal('Failed to find stocks'))
+			return resOk(res, stocks.map(s => s.view(true)))
+		})
+		.catch(next)
+}
+
+export const getStockData = async ({ body }, res, next) => {
 	let stockList = []
 
-	var splitSymbols = query.company.split(",")
-
-	for (let company of splitSymbols) {
-	 	let result = await fn(company)
+	for (let company of body.companies) {
+	 	let result = await fn(company.ticker)
 	 	if (result && result.data) {
 	 		stockList.push(result.data)
 	 	}
 	}
+
 	let formattedStockList = []
 
-	for (let stock of stockList) {
-		 for (let a in stock['Time Series (Daily)']) {
-			 formattedStockList.push({
-				ticker: stock['Meta Data']["2. Symbol"], 
-				date: a,
-				open: stock['Time Series (Daily)'][a]['1. open'],
-				high: stock['Time Series (Daily)'][a]['2. high'],
-				low: stock['Time Series (Daily)'][a]['3. low'],
-				close: stock['Time Series (Daily)'][a]['4. close'],
-				volume: stock['Time Series (Daily)'][a]['6. volume']
-			})
-		 }
+	for (let i in stockList) {
+		let stock = stockList[i]
+		for (let a in stock['Time Series (Daily)']) {
+			formattedStockList.push({
+			company: body.companies[i]['id'],
+			date: a,
+			open: stock['Time Series (Daily)'][a]['1. open'],
+			high: stock['Time Series (Daily)'][a]['2. high'],
+			low: stock['Time Series (Daily)'][a]['3. low'],
+			close: stock['Time Series (Daily)'][a]['4. close'],
+			volume: stock['Time Series (Daily)'][a]['6. volume']
+		})
+		}
 		
 	}
-	console.log(formattedStockList)
 
 	Stock.insertMany(formattedStockList)
 	.then(stocks => {

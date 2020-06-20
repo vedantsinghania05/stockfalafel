@@ -1,14 +1,11 @@
 import mongoose, { Schema } from 'mongoose'
 
 const stockSchema = new Schema({
-  ticker: {
-    type: String
-  },
- /* company: {
+  company: {
     type: Schema.ObjectId,
     ref: "Company",
     index: true
-  },*/
+  },
   date: {
     type: Date
   },

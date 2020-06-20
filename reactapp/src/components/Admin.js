@@ -20,13 +20,19 @@ class Admin extends Component {
 
   updateStock = () => { 
     let { companyData } = this.state
-    let formattedCompanyList = []
+  /*  let formattedCompanyList = []
     for (let i in companyData) {
       formattedCompanyList.push(companyData[i].ticker)
+    }*/
+
+    let formattedCompanyData = []
+
+    for (let company of companyData) {
+      formattedCompanyData.push({ id: company._id, ticker: company.ticker })
     }
-    getStock(getUserToken(), formattedCompanyList, 
+
+    getStock(getUserToken(), formattedCompanyData, 
       response => {
-        console.log('response->', response.data)
       },
       error => {
         console.log(error.message)
@@ -40,7 +46,6 @@ class Admin extends Component {
     if (companiesStr && companiesStr[0] !== ' ') {
       createCompany(companiesStr.split(', '),
         response => {
-          console.log('response->', response.data)
           this.setState({ companyData: response.data, companiesStr: ''})
         },
         error => {
@@ -53,7 +58,6 @@ class Admin extends Component {
   getCompanies = () => {
     getAllCompany(getUserToken(),
       response => {
-        console.log('response->', response.data)
         this.setState({ companyData: response.data})
       },
       error => {

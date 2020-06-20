@@ -15,7 +15,12 @@ const userSchema = new Schema({
     type: String,
     required: true,
     minlength: 6
-  }
+  },
+  companies: [{
+    type: Schema.ObjectId,
+    ref: 'Company',
+    index: true
+  }]
 }, {
   timestamps: true
 })
@@ -38,6 +43,7 @@ userSchema.methods = {
 
     view.id = this.id;
     view.email = this.email;
+    view.companies = this.companies;
  
     if (full) {
       view.createdAt = this.createdAt;
