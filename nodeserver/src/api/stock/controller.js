@@ -7,7 +7,6 @@ const axios = require('axios')
 
 
 export const getStoredStockData = ({ params }, res, next) => {
-	console.log('>>>>> params.id', params.id)
 	Stock.find({ company: params.id })
 		.sort('-date')
 		.then(stocks => {

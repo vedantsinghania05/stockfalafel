@@ -84,7 +84,6 @@ export const getStock = (token, tickers, successCbk, errorCbk) => {
 }
 
 export const getStoredStockData = (id, token, successCbk, errorCbk) => {
-  console.log('***** id: ', id)
   axiosInstance.get(nodeserverUrl + '/stocks/' + id,
     { headers: { Authorization: 'Bearer ' + token } }
   )
