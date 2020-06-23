@@ -4,7 +4,6 @@ import { Stock } from '.'
 const axios = require('axios')
 
 export const getStoredStockData = ({ params }, res, next) => {
-	console.log('>>>>> params.id', params.id)
 	Stock.find({ company: params.id })
 		.sort('-date')
 		.then(stocks => {
@@ -41,7 +40,6 @@ export const getStockData = async ({ body }, res, next) => {
 		}
 		
 	}
-	console.log(formattedStockList)
 	Stock.deleteMany()
 		.then(stocks => {
 			if (!stocks) return next(resInternal('Failed to remove stocks'))

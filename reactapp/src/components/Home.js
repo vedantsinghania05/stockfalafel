@@ -22,7 +22,6 @@ class Home extends Component {
 
         getUsersCompanies(getUserToken(),
           response => {
-            console.log('response->', response.data)
             this.setState({ userCompanyList: response.data })
           },
           error => {
@@ -62,10 +61,17 @@ class Home extends Component {
 
   sendtoGraph = (company) => {
     let { stockChartXValues, stockChartYValues } = this.state
+    let companyId = undefined
 
-    console.log('>>> company', company)
+    if (company.id) {
+      companyId = company.id
+    }
 
-    getStoredStockData(company.id, getUserToken(),
+    if (company._id) {
+      companyId = company._id
+    }
+
+    getStoredStockData(companyId, getUserToken(),
       response => {
         let stockData = []
         stockData = response.data

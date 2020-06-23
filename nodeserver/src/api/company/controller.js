@@ -32,15 +32,11 @@ export const getUsersCompanies = ({ user }, res, next) => {
   let usersCompanies = []
 
   for (let companyId of user.companies) {
-    console.log('>>>>>>', typeof mongoose.Types.ObjectId(companyId))
     usersCompanies.push(mongoose.Types.ObjectId(companyId))
   }
 
-  console.log('usersCompanies >>>>>>>>>>', usersCompanies)
-
   Company.find({ _id: { $in: usersCompanies } })
     .then(companies => {
-      console.log('>>>>>>>> companies',companies)
       if (!companies) return next(resInternal('Failed to find companies'))
       return resOk(res, companies.map(c => c.view(true)))
     })
