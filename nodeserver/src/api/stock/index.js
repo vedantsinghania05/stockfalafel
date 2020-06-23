@@ -10,10 +10,6 @@ router.put('/',
 	token({ required: true }),
 	getStockData)
 
-router.post('/bulk',
-	master(),
-	bulkInsert)
-
 router.get('/:id',
 	token({ required: true }),
 	getStoredStockData)

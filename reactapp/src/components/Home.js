@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Container, Card, CardBody, Button, Input, Form, Table } from 'reactstrap'
+import { Container, Card, CardBody, Button, Input, Form, Table, Spinner } from 'reactstrap'
 import Plot from 'react-plotly.js';
 import { signedInUserMstp, signedInUserMdtp, getUserToken } from '../redux/containers/SignedInUserCtr';
 import { connect } from 'react-redux';
@@ -8,7 +8,7 @@ import { updateUser, getStoredStockData, getUser, getUsersCompanies } from '../n
 class Home extends Component {
   constructor() {
     super();
-    this.state = { userCompanyList: [], showGraph: false, selectedTicker: undefined, stockChartXValues: [], stockChartYValues: [], companiesStr: '' }
+    this.state = { userCompanyList: [], showGraph: false, selectedTicker: undefined, stockChartXValues: [], stockChartYValues: [], companiesStr: '', loading: false }
   }
 
   componentDidMount = () => {
@@ -65,12 +65,15 @@ class Home extends Component {
 
     console.log('>>> company', company)
 
+    this.setState({loading: true})
+    setTimeout(() => { this.setState({ loading: false }) }, 5000)
+
     getStoredStockData(company.id, getUserToken(),
       response => {
         let stockData = []
         stockData = response.data
 
-        this.setState({ showGraph: true, selectedTicker: company })
+        this.setState({ showGraph: true, selectedTicker: company.ticker })
         for (let i in stockData) {
           stockChartXValues.push(stockData[i].date)
           stockChartYValues.push(stockData[i].open)    
@@ -84,12 +87,12 @@ class Home extends Component {
   }
 
   back = () => {
-    this.setState({ showGraph: false, stockChartXValues: [], stockChartYValues: [] })
+    this.setState({ showGraph: false, stockChartXValues: [], stockChartYValues: [], loading: false })
   }
 
 
   render() {
-    let { userCompanyList, showGraph, selectedTicker, stockChartXValues, stockChartYValues, companiesStr } = this.state
+    let { userCompanyList, showGraph, selectedTicker, stockChartXValues, stockChartYValues, companiesStr, loading } = this.state
     return (
       <Container className='dashboard'>
         <Card>
@@ -100,6 +103,8 @@ class Home extends Component {
               </div>
 
               {!showGraph && <div>
+                {loading && <Spinner size='sm' color='primary'></Spinner>}
+
                 <Form onSubmit={this.chooseCompanies}>
                   <Input bsSize='sm' name='companiesStr' placeholder='Enter Companies Here' value={companiesStr} onChange={this.onChangeCompaniesStr}/>
                 </Form>
@@ -108,10 +113,12 @@ class Home extends Component {
                   <tbody>
                     {userCompanyList && userCompanyList.map((company, i) => <tr key={i}>
                       <td>{company.ticker}</td>
-                      <td><Button size='sm' color='primary' onClick={() => this.sendtoGraph(company)}>{"->"}</Button></td>
+                      <td><Button size='sm' color='primary' disabled={loading} onClick={() => this.sendtoGraph(company)}>{"->"}</Button></td>
                     </tr>)}
                   </tbody>
                 </Table>
+
+                <sub>*Old companies will be removed upon selection of new companies</sub>
               </div>}
 
             {showGraph && <div>

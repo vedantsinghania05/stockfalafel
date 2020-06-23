@@ -1,7 +1,10 @@
-import { resInternal, resOk, resNotFound, resNoContent, resCreated } from '../../services/response/'
+import { resInternal, resOk, resCreated } from '../../services/response/'
+import mongoose from 'mongoose';
 import { Stock } from '.'
+import { Company } from '../company/index'
 
 const axios = require('axios')
+
 
 export const getStoredStockData = ({ params }, res, next) => {
 	console.log('>>>>> params.id', params.id)
@@ -16,15 +19,16 @@ export const getStoredStockData = ({ params }, res, next) => {
 
 export const getStockData = async ({ body }, res, next) => {
 	let stockList = []
+	let formattedStockList = []
+	let invalidCompanies = []
 
 	for (let company of body.companies) {
 	 	let result = await fn(company.ticker)
 	 	if (result && result.data) {
-	 		stockList.push(result.data)
+			if (result.data['Error Message']) invalidCompanies.push(mongoose.Types.ObjectId(company.id))
+			else stockList.push(result.data)
 	 	}
 	}
-
-	let formattedStockList = []
 
 	for (let i in stockList) {
 		let stock = stockList[i]
@@ -37,26 +41,19 @@ export const getStockData = async ({ body }, res, next) => {
 			low: stock['Time Series (Daily)'][a]['3. low'],
 			close: stock['Time Series (Daily)'][a]['4. close'],
 			volume: stock['Time Series (Daily)'][a]['6. volume']
-		})
+			})
 		}
-		
 	}
-	console.log(formattedStockList)
-	Stock.deleteMany()
+
+	Company.deleteMany({_id: {$in: invalidCompanies}})
+		.then(company => {
+			if (!company) return next(resInternal('Failed to delete company'))
+			return Stock.deleteMany()
+		})
 		.then(stocks => {
 			if (!stocks) return next(resInternal('Failed to remove stocks'))
 			return Stock.insertMany(formattedStockList)
 		})
-		.then(stocks => {
-			if (!stocks) return next(resInternal('Failed to create stocks'))
-			return resCreated(res, stocks.map(s => s.view(true)))
-		})
-		.catch(next)
-
-}
-
-export const bulkInsert = ({ body }, res, next) => {
-	Stock.insertMany(body.stockData)
 		.then(stocks => {
 			if (!stocks) return next(resInternal('Failed to create stocks'))
 			return resCreated(res, stocks.map(s => s.view(true)))

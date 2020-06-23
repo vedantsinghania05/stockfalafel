@@ -61,17 +61,6 @@ export const updateUser = (id, token, email, companies, successCbk, errorCbk) =>
   .catch(errorCbk);
 }
 
-export const getValidUsers = (token, emailsList, successCbk, errorCbk) => {
-  axiosInstance.put(nodeserverUrl + '/users',
-    {
-      access_token: token,
-      emails: emailsList
-    }
-  )
-  .then(successCbk)
-  .catch(errorCbk);
-}
-
 export const deleteUser  = (id, token, successCbk, errorCbk) => {
   axiosInstance.delete(nodeserverUrl + '/users/' + id,
     { headers: { Authorization: 'Bearer ' + token } }

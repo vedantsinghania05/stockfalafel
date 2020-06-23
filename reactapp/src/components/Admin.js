@@ -20,10 +20,6 @@ class Admin extends Component {
 
   updateStock = () => { 
     let { companyData } = this.state
-  /*  let formattedCompanyList = []
-    for (let i in companyData) {
-      formattedCompanyList.push(companyData[i].ticker)
-    }*/
 
     let formattedCompanyData = []
 
@@ -33,10 +29,11 @@ class Admin extends Component {
 
     getStock(getUserToken(), formattedCompanyData, 
       response => {
+        this.getCompanies()
       },
       error => {
         console.log(error.message)
-      }
+      } 
     )
   }
 
@@ -96,6 +93,8 @@ class Admin extends Component {
                 </tr>)}
               </tbody>
             </table>
+
+            <sub>*Old companies will be removed upon selection of new companies</sub>
 
           </CardBody>
         </Card>
