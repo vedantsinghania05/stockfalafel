@@ -19,14 +19,10 @@ export const getStoredStockData = ({ params }, res, next) => {
 export const getStockData = async ({ body }, res, next) => {
 	let stockList = []
 	let formattedStockList = []
-	let invalidCompanies = []
 
 	for (let company of body.companies) {
 	 	let result = await fn(company.ticker)
-	 	if (result && result.data) {
-			if (result.data['Error Message']) invalidCompanies.push(mongoose.Types.ObjectId(company.id))
-			else stockList.push(result.data)
-	 	}
+	 	if (result && result.data) stockList.push(result.data)
 	}
 
 	for (let i in stockList) {
@@ -42,13 +38,9 @@ export const getStockData = async ({ body }, res, next) => {
 			volume: stock['Time Series (Daily)'][a]['6. volume']
 			})
 		}
-	}
-
-	Company.deleteMany({_id: {$in: invalidCompanies}})
-		.then(company => {
-			if (!company) return next(resInternal('Failed to delete company'))
-			return Stock.deleteMany()
-		})
+  }
+  
+  Stock.deleteMany()
 		.then(stocks => {
 			if (!stocks) return next(resInternal('Failed to remove stocks'))
 			return Stock.insertMany(formattedStockList)
