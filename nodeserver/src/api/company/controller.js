@@ -46,6 +46,10 @@ export const create = async ({ body }, res, next) => {
       }
     }
 
+    return Company.deleteMany({ ticker: null })
+  })
+  .then(companies => {
+    if (!companies) return next(resInternal("Failed to delete ghosts"))
     return Stock.deleteMany()
   })
   .then(stocks => {

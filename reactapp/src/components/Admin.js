@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {Container, Card, CardBody, Button, Form, Input } from 'reactstrap'
+import {Container, Card, CardBody, Button, Form, Input, Spinner } from 'reactstrap'
 import { connect } from 'react-redux';
 import { getStock, createCompany, getAllCompany } from '../nodeserverapi'
 import { signedInUserMstp, signedInUserMdtp, getUserToken } from '../redux/containers/SignedInUserCtr';
@@ -7,7 +7,7 @@ import { signedInUserMstp, signedInUserMdtp, getUserToken } from '../redux/conta
 class Admin extends Component {
   constructor() {
     super();
-    this.state = { companyData: [], companiesStr: '' }
+    this.state = { companyData: [], companiesStr: '', loading: false }
   }
 
   componentDidMount = () => { 
@@ -41,6 +41,10 @@ class Admin extends Component {
     let { companiesStr } = this.state
     e.preventDefault()
     if (companiesStr && companiesStr[0] !== ' ') {
+
+      this.setState({loading: true})
+      setTimeout(() => { this.setState({ loading: false }) }, 5000)
+
       createCompany(companiesStr.split(', '),
         response => {
           this.setState({ companyData: response.data, companiesStr: ''})
@@ -65,7 +69,7 @@ class Admin extends Component {
 
 
   render() {
-    let { companyData, companiesStr } = this.state
+    let { companyData, companiesStr, loading } = this.state
     return (
       <Container className='dashboard'>
         <Card>
@@ -75,11 +79,13 @@ class Admin extends Component {
               <h5 className="bold-text">Admin</h5>
             </div>
 
+            {loading && <Spinner size='sm' color='primary'></Spinner>}
+
             <Form onSubmit={this.createCompanies}>
               <Input bsSize='sm' name='companiesStr' placeholder='Enter Companies Here' value={companiesStr} onChange={this.onChangeCompaniesStr}/>
             </Form>
 
-            <Button size='sm' color='primary' onClick={this.updateStock}>Update Stock Data</Button>
+            <Button size='sm' color='primary' disabled={loading} onClick={this.updateStock}>Update Stock Data</Button>
 
             <table>
               <thead>
