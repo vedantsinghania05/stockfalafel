@@ -15,8 +15,8 @@ export const create = async ({ body }, res, next) => {
 	for (let i in fields) {
 	 	let result = await fn(fields[i].ticker)
 	 	if (result && result.data) {
-			if (result.data['Error Message']) await fields.splice(i, 1)
-			else stockList.push(result.data)
+			if (result.data['Error Message']) delete fields[i].ticker
+      else stockList.push(result.data)
 	 	}
   }
   console.log('>>>>>>>>>>> fields', fields)
