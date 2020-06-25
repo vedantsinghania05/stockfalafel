@@ -95,6 +95,7 @@ class Admin extends Component {
             </table>
 
             <sub>*Old companies will be removed upon selection of new companies</sub>
+            <sub>**Remember to only create new stocks after 1 min of inactivity</sub>
 
           </CardBody>
         </Card>
