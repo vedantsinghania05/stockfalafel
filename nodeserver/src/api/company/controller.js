@@ -5,37 +5,29 @@ import { Stock } from '../stock/index'
 const axios = require('axios')
 
 export const create = async ({ body }, res, next) => {
-  let fields = []
-  for (let i in body.ticker) { fields.push({ ticker: body.ticker[i] }) }
+  let fields = ({ ticker: body.ticker})
 
   let stockList = []
   let formattedStockList = []
-  let gCompanies = []
+  let gCompany = []
 
-	for (let i in fields) {
-	 	let result = await fn(fields[i].ticker)
+	 	let result = await fn(fields.ticker)
 	 	if (result && result.data) {
-			if (result.data['Error Message']) delete fields[i].ticker
+			if (result.data['Error Message']) delete fields.ticker
       else stockList.push(result.data)
 	 	}
-  }
-  console.log('>>>>>>>>>>> fields', fields)
 
-  Company.deleteMany()
-  .then(companies => {
-    if (!companies) return next(resInternal('Failed to clear database'))
-    return Company.insertMany(fields)
-  })
-  .then (companies => {
-    if (!companies) return next(resInternal('Failed to create companies'))
+  Company.create(fields)
+  .then (company => {
+    if (!company) return next(resInternal('Failed to create company'))
 
-    gCompanies = companies
+    gCompany = company
 
     for (let i in stockList) {
       let stock = stockList[i]
       for (let a in stock['Time Series (Daily)']) {
         formattedStockList.push({
-        company: companies[i]['id'],
+        company: company._id,
         date: a,
         open: stock['Time Series (Daily)'][a]['1. open'],
         high: stock['Time Series (Daily)'][a]['2. high'],
@@ -46,20 +38,16 @@ export const create = async ({ body }, res, next) => {
       }
     }
 
-    return Company.deleteMany({ ticker: null })
+    return Company.deleteOne({ ticker: null })
   })
-  .then(companies => {
-    if (!companies) return next(resInternal("Failed to delete ghosts"))
-    return Stock.deleteMany()
+  .then(company => {
+    if (!company) return next(resInternal("Failed to delete ghosts"))
+    return Stock.insertMany(formattedStockList)
   })
-  .then(stocks => {
-    if (!stocks) return next(resInternal('Failed to remove stocks'))
-      return Stock.insertMany(formattedStockList)
-    })
   .then(stocks => {
     if (!stocks) return next(resInternal('Failed to create stocks'))
-    return resCreated(res, gCompanies)
-  })
+    return resCreated(res, gCompany)
+  })  
   .catch(next)
 
 
@@ -68,11 +56,25 @@ export const create = async ({ body }, res, next) => {
 export const index = ({ query }, res, next) => {
   Company.find()
     .then (companies => {
-      if (!companies) return next(resInternal('Failed to find commpanies'))
+      if (!companies) return next(resInternal('Failed to find companies'))
       return resOk(res, companies)
     })
     .catch(next)
 }
+
+export const destroy = ({ params }, res, next) => {
+  Company.deleteOne({ _id: params.id})
+    .then(company => {
+      if (!company) return next(resInternal('Failed to delete company'))
+      return Stock.deleteMany({company: params.id})
+    })
+    .then(stocks => {
+      if (!stocks) return next(resInternal('Failed to delete stocks'))
+      return resNoContent(res, stocks)
+    })
+    .catch(next)
+}
+
 
 import mongoose from 'mongoose'
 
