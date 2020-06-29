@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Container, Card, CardBody, Button, Input, Form, Table, Spinner } from 'reactstrap'
+import { Container, Card, CardBody, Button, Input, Form, Spinner } from 'reactstrap'
 import Plot from 'react-plotly.js';
 import { signedInUserMstp, signedInUserMdtp, getUserToken } from '../redux/containers/SignedInUserCtr';
 import { connect } from 'react-redux';
@@ -175,7 +175,7 @@ class Home extends Component {
                   <Input bsSize='sm' name='companiesStr' placeholder='Enter Companies Here' value={companiesStr} onChange={this.onChangeCompaniesStr}/>
                 </Form>
 
-                  <Table size='sm'>
+                  <table size='sm'>
                   <tbody>
                     {userCompanyList && userCompanyList.map((company, i) => <tr key={i}>
                       <td>{company.ticker}</td>
@@ -183,9 +183,7 @@ class Home extends Component {
                       <td><Button size='sm' color='primary' disabled={loading} onClick={() => this.deleteCompany(company)}>x</Button></td>
                     </tr>)}
                   </tbody>
-                </Table>
-
-                <sub>*Old companies will be removed upon selection of new companies</sub>
+                </table>
               </div>}
 
             {showGraph && <div>

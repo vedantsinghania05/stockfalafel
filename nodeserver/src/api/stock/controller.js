@@ -1,5 +1,6 @@
 import { resInternal, resOk, resCreated } from '../../services/response/'
 import { Stock } from '.'
+import { Company } from '../company/index'
 
 const axios = require('axios')
 
@@ -17,9 +18,13 @@ export const getStoredStockData = ({ params }, res, next) => {
 export const getStockData = async ({ body }, res, next) => {
 	let stockList = []
 	let formattedStockList = []
+	let invalidCompany = []
 
 	let result = await fn(body.company.ticker)
-	if (result && result.data) stockList.push(result.data)
+	if (result && result.data) {
+		if (result.data['Error Message']) invalidCompany = body.company.id
+		else stockList.push(result.data)
+	}
 
 	for (let i in stockList) {
 		let stock = stockList[i]
@@ -36,7 +41,11 @@ export const getStockData = async ({ body }, res, next) => {
 		}
 	}
 
-	Stock.deleteMany({company: body.company.id })
+	Company.deleteOne({_id: invalidCompany})
+		.then(company => {
+			if (!company) return next(resInternal('Failed to delete company'))
+			return Stock.deleteMany({company: body.company.id })
+		})
 		.then(stocks => {
 			if (!stocks) return next(resInternal('Failed to remove stocks'))
 			return Stock.insertMany(formattedStockList)

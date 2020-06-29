@@ -38,11 +38,9 @@ class Admin extends Component {
     e.preventDefault()
     if (companyStr && companyStr[0] !== ' ') {
 
-      this.setState({loading: true})
-
       createCompany(companyStr,
         response => {
-          this.setState({ companyStr: '', loading: false})
+          this.setState({ companyStr: ''})
           this.getCompanies()
         },
         error => {
