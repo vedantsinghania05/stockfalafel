@@ -1,12 +1,12 @@
-import { resInternal, resOk, resNotFound, resNoContent, resCreated } from '../../services/response/'
+import { resInternal, resOk, resNoContent, resCreated } from '../../services/response/'
 import mongoose from 'mongoose'
 import { Company } from '.'
 import { Stock } from '../stock/index'
+import { User } from '../user/index'
 
 
 export const create = ({ body }, res, next) => {
-  let fields = ({ ticker: body.ticker})
-  Company.create(fields)
+  Company.create({ ticker: body.ticker })
     .then (company => {
       if (!company) return next(resInternal('Failed to create company'))
       return resCreated(res, company)
@@ -23,8 +23,17 @@ export const index = ({ query }, res, next) => {
     .catch(next)
 }
 
-export const destroy = ({ params }, res, next) => {
-  Company.deleteOne({ _id: params.id})
+export const destroy = ({ params, user }, res, next) => {
+  User.findById(user.id)
+    .then(user => {
+      if (!user) return next(resInternal('Failed to find user'))
+      user.companies.splice(user.companies.indexOf(params.id), 1)
+      return user.save();
+    })
+    .then(user => {
+      if (!user) return next(resInternal('Failed to update user'))
+      return Company.deleteOne({ _id: params.id})
+    })
     .then(company => {
       if (!company) return next(resInternal('Failed to delete company'))
       return Stock.deleteMany({company: params.id})
