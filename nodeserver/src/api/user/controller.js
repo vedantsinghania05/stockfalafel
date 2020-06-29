@@ -36,27 +36,54 @@ export const create = ({ body }, res, next) => {
     .catch(next)
 }
 
-export const update = ({ params, body, user }, res, next) => {
-  let gCompanies = []
-  Company.find({ ticker: {$in: body.companies} })
-    .then(companies => {
-      if (!companies) return next(resInternal('Failed to find companies'))
-      companies.map(c => gCompanies.push(c))
-      return User.findById(params.id === 'me' ? user.id : params.id)
-    })
-    .then(user => {
-      if (!user) return next(resNotFound('Failed to find user'));
+import mongoose from 'mongoose'
 
-      if (body.email) user.email = body.email;
-      if (gCompanies) user.companies = gCompanies;
-      return user.save();
-    })
-    .then(user => {
-      if (!user) return next(resInternal('Failed to update user'));
-      return resOk(res, user.view(true));
-    })
-    .catch(next)
+export const update = ({ params, body, user }, res, next) => {
+  console.log('>>>>>>>>>>>>>>> *** ', body)
+
+  if (body.adding) {
+    let gCompanies = undefined
+    Company.findOne({ ticker: body.companies })
+      .then(company => {
+        if (!company) return next(resInternal('Failed to find companies'))
+        gCompanies = company
+        return User.findById(params.id === 'me' ? user.id : params.id)
+      })
+      .then(user => {
+        if (!user) return next(resNotFound('Failed to find user'));
+
+        let usersCompanies = [...user.companies]
+
+        console.log('>>>>>>', usersCompanies, typeof usersCompanies)
+        console.log('>>>>>>', gCompanies._id, typeof gCompanies._id)
+
+        usersCompanies.push(gCompanies._id)
+        console.log('>>>>>>', usersCompanies)
+
+        if (body.email) user.email = body.email;
+        if (gCompanies) user.companies = usersCompanies
+        return user.save();
+      })
+      .then(user => {
+        if (!user) return next(resInternal('Failed to update user'));
+        return resOk(res, user.view(true));
+      })
+      .catch(next)
+  } else {
+    User.findById(params.id === 'me' ? user.id : params.id)
+      .then(user => {
+        user.email = body.email
+        user.companies = body.companies
+
+        return user.save()
+      })  
+      .then(user => {
+        if (!user) return next(resInternal('Failed to update user'));
+        return resOk(res, user.view(true));
+      })
+      .catch(next)
   }
+}
 
 export const updatePassword = ({ params, body, user }, res, next) =>
   User.findById(params.id === 'me' ? user.id : params.id)

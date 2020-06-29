@@ -49,12 +49,13 @@ export const getUser = (id, token, successCbk, errorCbk) => {
   .catch(errorCbk);
 }
 
-export const updateUser = (id, token, email, companies, successCbk, errorCbk) => {
+export const updateUser = (id, token, email, companies, adding, successCbk, errorCbk) => {
   axiosInstance.put(nodeserverUrl + '/users/' + id,
     {
       email: email,
       companies: companies,
-      access_token: token
+      access_token: token,
+      adding: adding
     }
   )
   .then(successCbk)

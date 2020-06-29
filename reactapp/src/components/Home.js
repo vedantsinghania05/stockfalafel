@@ -46,11 +46,30 @@ class Home extends Component {
     let { userInfo } = this.props;
     e.preventDefault()
 
-    let companyList = companiesStr.split(', ')
-
-    updateUser(userInfo.id, getUserToken(), userInfo.email, companyList,
+    updateUser(userInfo.id, getUserToken(), userInfo.email, companiesStr, true,
       response => {
-        this.setState({companiesStr: '', userCompanyList: response.data.companies})
+        getUser('me', getUserToken(),
+          response => {
+            this.props.setUserInfo(response.data)
+            let companyIds = []
+            for (let company of response.data.companies) {
+              companyIds.push(company)
+            }
+    
+            getUsersCompanies(getUserToken(),
+              response => {
+                this.setState({ userCompanyList: response.data, companiesStr: '' })
+              },
+              error => {
+                console.log('error:', error.message)
+              }
+            )
+    
+          },
+          error => {
+            console.log('error: ', error.message)
+          }
+        )
       },
       error => {
         console.log('error: ', error.message)
@@ -92,6 +111,47 @@ class Home extends Component {
     )
   }
 
+  deleteCompany = (company) => {
+    
+    let usersCompanies = [...this.props.userInfo.companies]
+
+    for (let i in usersCompanies) {
+      if (String(usersCompanies[i]) === String(company.id)) {
+        usersCompanies.splice(i, 1)
+      }
+    }
+
+    updateUser(this.props.userInfo.id, getUserToken(), this.props.userInfo.email, usersCompanies, false,
+    response => {
+      getUser('me', getUserToken(),
+        response => {
+          this.props.setUserInfo(response.data)
+          let companyIds = []
+          for (let company of response.data.companies) {
+            companyIds.push(company)
+          }
+
+          getUsersCompanies(getUserToken(),
+            response => {
+              this.setState({ userCompanyList: response.data , companiesStr: '' })
+            },
+            error => {
+              console.log('error:', error.message)
+            }
+          )
+        },
+        error => {
+          console.log('error: ', error.message)
+        }
+      )
+    },
+    error => {
+      console.log('error: ', error.message)
+    }
+  )
+
+  }
+
   back = () => {
     this.setState({ showGraph: false, stockChartXValues: [], stockChartYValues: [], loading: false })
   }
@@ -120,6 +180,7 @@ class Home extends Component {
                     {userCompanyList && userCompanyList.map((company, i) => <tr key={i}>
                       <td>{company.ticker}</td>
                       <td><Button size='sm' color='primary' disabled={loading} onClick={() => this.sendtoGraph(company)}>{"->"}</Button></td>
+                      <td><Button size='sm' color='primary' disabled={loading} onClick={() => this.deleteCompany(company)}>x</Button></td>
                     </tr>)}
                   </tbody>
                 </Table>
