@@ -1,7 +1,5 @@
 import { resInternal, resOk, resCreated } from '../../services/response/'
-import mongoose from 'mongoose';
 import { Stock } from '.'
-import { Company } from '../company/index'
 
 const axios = require('axios')
 
@@ -20,16 +18,14 @@ export const getStockData = async ({ body }, res, next) => {
 	let stockList = []
 	let formattedStockList = []
 
-	for (let company of body.companies) {
-	 	let result = await fn(company.ticker)
-	 	if (result && result.data) stockList.push(result.data)
-	}
+	let result = await fn(body.company.ticker)
+	if (result && result.data) stockList.push(result.data)
 
 	for (let i in stockList) {
 		let stock = stockList[i]
 		for (let a in stock['Time Series (Daily)']) {
 			formattedStockList.push({
-			company: body.companies[i]['id'],
+			company: body.company.id,
 			date: a,
 			open: stock['Time Series (Daily)'][a]['1. open'],
 			high: stock['Time Series (Daily)'][a]['2. high'],
@@ -38,9 +34,9 @@ export const getStockData = async ({ body }, res, next) => {
 			volume: stock['Time Series (Daily)'][a]['6. volume']
 			})
 		}
-  }
-  
-  Stock.deleteMany()
+	}
+
+	Stock.deleteMany({company: body.company.id })
 		.then(stocks => {
 			if (!stocks) return next(resInternal('Failed to remove stocks'))
 			return Stock.insertMany(formattedStockList)

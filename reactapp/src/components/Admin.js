@@ -1,53 +1,49 @@
 import React, { Component } from 'react';
-import {Container, Card, CardBody, Button, Form, Input, Spinner } from 'reactstrap'
+import { Container, Card, CardBody, Button, Form, Input, Spinner } from 'reactstrap'
 import { connect } from 'react-redux';
-import { getStock, createCompany, getAllCompany } from '../nodeserverapi'
+import { getStock, createCompany, getAllCompany, deleteCompany } from '../nodeserverapi'
 import { signedInUserMstp, signedInUserMdtp, getUserToken } from '../redux/containers/SignedInUserCtr';
 
 class Admin extends Component {
   constructor() {
     super();
-    this.state = { companyData: [], companiesStr: '', loading: false }
+    this.state = { companyData: [], companyStr: '', loading: false }
   }
 
   componentDidMount = () => { 
     this.getCompanies()
   }
 
-  onChangeCompaniesStr = (e) => {
-    this.setState({ companiesStr: e.target.value.toUpperCase()})
+  onChangecompanyStr = (e) => {
+    this.setState({ companyStr: e.target.value.toUpperCase()})
   }
 
-  updateStock = () => { 
-    let { companyData } = this.state
+  updateStock = (company) => { 
+    let formattedCompanyData = ({ id: company._id, ticker: company.ticker })
+    this.setState({ loading: true })
 
-    let formattedCompanyData = []
-
-    for (let company of companyData) {
-      formattedCompanyData.push({ id: company._id, ticker: company.ticker })
-    }
-
-    getStock(getUserToken(), formattedCompanyData, 
-      response => {
-        this.getCompanies()
-      },
-      error => {
-        console.log(error.message)
-      } 
-    )
+     getStock(getUserToken(), formattedCompanyData, 
+       response => {
+         this.getCompanies()
+         this.setState({ loading: false })
+       },
+       error => {
+         console.log(error.message)
+       } 
+     )
   }
 
   createCompanies = (e) => {
-    let { companiesStr } = this.state
+    let { companyStr } = this.state
     e.preventDefault()
-    if (companiesStr && companiesStr[0] !== ' ') {
+    if (companyStr && companyStr[0] !== ' ') {
 
       this.setState({loading: true})
-      setTimeout(() => { this.setState({ loading: false }) }, 5000)
 
-      createCompany(companiesStr.split(', '),
+      createCompany(companyStr,
         response => {
-          this.setState({ companyData: response.data, companiesStr: ''})
+          this.setState({ companyStr: '', loading: false})
+          this.getCompanies()
         },
         error => {
           console.log(error.message)
@@ -67,9 +63,21 @@ class Admin extends Component {
     )
   }
 
+  removeCompany = (company) => {
+    let id = company._id
+    deleteCompany(id, getUserToken(),
+      response => {
+        this.getCompanies()
+      },
+      error => {
+        console.log(error.message)
+      }
+    )
+  }
+
 
   render() {
-    let { companyData, companiesStr, loading } = this.state
+    let { companyData, companyStr, loading } = this.state
     return (
       <Container className='dashboard'>
         <Card>
@@ -82,26 +90,18 @@ class Admin extends Component {
             {loading && <Spinner size='sm' color='primary'></Spinner>}
 
             <Form onSubmit={this.createCompanies}>
-              <Input bsSize='sm' name='companiesStr' placeholder='Enter Companies Here' value={companiesStr} onChange={this.onChangeCompaniesStr}/>
+              <Input bsSize='sm' name='companyStr' placeholder='Enter Company Here' value={companyStr} onChange={this.onChangecompanyStr}/>
             </Form>
 
-            <Button size='sm' color='primary' disabled={loading} onClick={this.updateStock}>Update Stock Data</Button>
-
             <table>
-              <thead>
-                <tr>
-                  <th>Companies</th>
-                </tr>
-              </thead>
               <tbody>
                 {companyData.map((company, i) => <tr key={i}>
                   <td>{company.ticker}</td>
+                  <td><Button size='sm' color='primary' disabled={loading} onClick={() => {this.updateStock(company)}}>Update</Button></td>
+                  <td><Button size='sm' color='danger' disabled={loading} onClick={() => {this.removeCompany(company)}}>X</Button></td>
                 </tr>)}
               </tbody>
             </table>
-
-            <sub>*Old companies will be removed upon selection of new companies</sub>
-            <sub>**Remember to only create new stocks after 1 min of inactivity</sub>
 
           </CardBody>
         </Card>

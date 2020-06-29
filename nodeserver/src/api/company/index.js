@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { master, token } from '../../services/passport'
-import { create, index, getUsersCompanies } from './controller'
+import { create, index, getUsersCompanies, destroy } from './controller'
 import { schema } from './model'
 export Company, { schema } from './model'
 
@@ -17,5 +17,9 @@ const router = new Router()
  router.get('/user',
  token({ required: true }),
  getUsersCompanies)
+
+ router.delete('/:id',
+ token({ required: true}),
+ destroy)
 
  export default router
