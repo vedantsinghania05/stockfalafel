@@ -8,7 +8,7 @@ import { updateUser, getStoredStockData, getUser, getUsersCompanies } from '../n
 class Home extends Component {
   constructor() {
     super();
-    this.state = { userCompanyList: [], showGraph: false, selectedTicker: undefined, stockChartXValues: [], stockChartYValues: [], companiesStr: '', loading: false }
+    this.state = { result: '', userCompanyList: [], showGraph: false, selectedTicker: undefined, stockChartXValues: [], stockChartYValues: [], companiesStr: '', loading: false }
   }
 
   componentDidMount = () => {
@@ -48,28 +48,32 @@ class Home extends Component {
 
     updateUser(userInfo.id, getUserToken(), userInfo.email, companiesStr, true,
       response => {
-        getUser('me', getUserToken(),
-          response => {
-            this.props.setUserInfo(response.data)
-            let companyIds = []
-            for (let company of response.data.companies) {
-              companyIds.push(company)
-            }
-    
-            getUsersCompanies(getUserToken(),
-              response => {
-                this.setState({ userCompanyList: response.data, companiesStr: '' })
-              },
-              error => {
-                console.log('error:', error.message)
+        if (response.data === 'no data for company') this.setState({ result: 'no data for company' })
+        else {
+          this.setState({ result: '' })
+          getUser('me', getUserToken(),
+            response => {
+              this.props.setUserInfo(response.data)
+              let companyIds = []
+              for (let company of response.data.companies) {
+                companyIds.push(company)
               }
-            )
-    
-          },
-          error => {
-            console.log('error: ', error.message)
-          }
-        )
+      
+              getUsersCompanies(getUserToken(),
+                response => {
+                  this.setState({ userCompanyList: response.data, companiesStr: '' })
+                },
+                error => {
+                  console.log('error:', error.message)
+                }
+              )
+      
+            },
+            error => {
+              console.log('error: ', error.message)
+            }
+          )
+        }
       },
       error => {
         console.log('error: ', error.message)
@@ -158,7 +162,7 @@ class Home extends Component {
 
 
   render() {
-    let { userCompanyList, showGraph, selectedTicker, stockChartXValues, stockChartYValues, companiesStr, loading } = this.state
+    let { result, userCompanyList, showGraph, selectedTicker, stockChartXValues, stockChartYValues, companiesStr, loading } = this.state
     return (
       <Container className='dashboard'>
         <Card>
@@ -167,6 +171,8 @@ class Home extends Component {
               <div className="card__title">
                 <h5 className="bold-text">{showGraph ? <Button size='sm' color='primary' onClick={this.back}>{"<-"}</Button> : "Home"}</h5>
               </div>
+
+              {result && <p>{result}</p>}
 
               {!showGraph && <div>
                 {loading && <Spinner size='sm' color='primary'></Spinner>}

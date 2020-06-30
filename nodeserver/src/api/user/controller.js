@@ -1,5 +1,6 @@
 import { resInternal, resOk, resNotFound, resNoContent, resCreated } from '../../services/response/'
 import { User } from '.'
+import { Stock } from '../stock/index'
 import { Company } from '../company'
 import { sign } from '../../services/jwt'
 
@@ -42,12 +43,18 @@ export const update = ({ params, body, user }, res, next) => {
   console.log('>>>>>>>>>>>>>>> *** ', body)
 
   if (body.adding) {
+    let initCompany = undefined
     let gCompanies = undefined
     Company.findOne({ ticker: body.companies })
       .then(company => {
         if (!company) return next(resInternal('Failed to find companies'))
-        gCompanies = company
-        return User.findById(params.id === 'me' ? user.id : params.id)
+        initCompany = company
+        return Stock.find({ company: company.id })
+      })
+      .then(stocks => {
+        if (stocks.length === 0) return resOk(res, 'no data for company')
+        gCompanies = initCompany
+        return User.findById(user.id)
       })
       .then(user => {
         if (!user) return next(resNotFound('Failed to find user'));
