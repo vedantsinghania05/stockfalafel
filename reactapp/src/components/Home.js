@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Container, Card, CardBody, Button, Input, Form, Spinner } from 'reactstrap'
+import { Container, Card, CardBody, Button, Input, Form, Spinner, Alert } from 'reactstrap'
 import Plot from 'react-plotly.js';
 import { signedInUserMstp, signedInUserMdtp, getUserToken } from '../redux/containers/SignedInUserCtr';
 import { connect } from 'react-redux';
@@ -16,30 +16,26 @@ class Home extends Component {
     getUser('me', getUserToken(),
       response => {
         let companyIds = []
-        for (let company of response.data.companies) {
-          companyIds.push(company)
-        }
+        for (let company of response.data.companies) companyIds.push(company)
 
         getUsersCompanies(getUserToken(),
           response => {
             this.setState({ userCompanyList: response.data })
           },
           error => {
-            console.log('error:', error.message)
+            this.setState({result: error.message})
           }
         )
 
       },
       error => {
-        console.log('error: ', error.message)
+        this.setState({result: error.message})
       }
     )
 
   }
 
-  onChangeCompaniesStr = (e) => {
-    this.setState({ companiesStr: e.target.value.toUpperCase()})
-  }
+  onChangeCompaniesStr = (e) => this.setState({ companiesStr: e.target.value.toUpperCase()})
 
   chooseCompanies = (e) => {
     let { companiesStr } = this.state
@@ -48,7 +44,7 @@ class Home extends Component {
 
     updateUser(userInfo.id, getUserToken(), userInfo.email, companiesStr, true,
       response => {
-        if (response.data === 'no data for company') this.setState({ result: 'no data for company' })
+        if (response.data === 'no data for company') this.setState({ result: "No Data For Company", companiesStr: '' })
         else {
           this.setState({ result: '' })
           getUser('me', getUserToken(),
@@ -64,19 +60,19 @@ class Home extends Component {
                   this.setState({ userCompanyList: response.data, companiesStr: '' })
                 },
                 error => {
-                  console.log('error:', error.message)
+                  this.setState({result: error.message})
                 }
               )
       
             },
             error => {
-              console.log('error: ', error.message)
+              this.setState({result: error.message})
             }
           )
         }
       },
       error => {
-        console.log('error: ', error.message)
+        this.setState({result: error.message})
       }
     )
 
@@ -86,21 +82,16 @@ class Home extends Component {
     let { stockChartXValues, stockChartYValues } = this.state
     let companyId = undefined
 
-    if (company.id) {
-      companyId = company.id
-    }
+    if (company.id) companyId = company.id
+    if (company._id) companyId = company._id
 
     this.setState({loading: true})
     setTimeout(() => { this.setState({ loading: false }) }, 5000)
 
-    if (company._id) {
-      companyId = company._id
-    }
 
     getStoredStockData(companyId, getUserToken(),
       response => {
-        let stockData = []
-        stockData = response.data
+        let stockData = response.data
 
         this.setState({ showGraph: true, selectedTicker: company.ticker })
         for (let i in stockData) {
@@ -110,7 +101,7 @@ class Home extends Component {
 
       },
       error => {
-        console.log('error->', error.message)
+        this.setState({result: error.message})
       }
     )
   }
@@ -140,25 +131,25 @@ class Home extends Component {
               this.setState({ userCompanyList: response.data , companiesStr: '' })
             },
             error => {
-              console.log('error:', error.message)
+              this.setState({result: error.message})
             }
           )
         },
         error => {
-          console.log('error: ', error.message)
+          this.setState({result: error.message})
         }
       )
     },
     error => {
-      console.log('error: ', error.message)
+      this.setState({result: error.message})
     }
   )
 
   }
 
-  back = () => {
-    this.setState({ showGraph: false, stockChartXValues: [], stockChartYValues: [], loading: false })
-  }
+  back = () => this.setState({ showGraph: false, stockChartXValues: [], stockChartYValues: [], loading: false })
+
+  removeResult =() => this.setState({result: ''})
 
 
   render() {
@@ -172,7 +163,7 @@ class Home extends Component {
                 <h5 className="bold-text">{showGraph ? <Button size='sm' color='primary' onClick={this.back}>{"<-"}</Button> : "Home"}</h5>
               </div>
 
-              {result && <p>{result}</p>}
+              {result && <Alert toggle={this.removeResult} color='danger' size='sm' >{result}</Alert>}
 
               {!showGraph && <div>
                 {loading && <Spinner size='sm' color='primary'></Spinner>}

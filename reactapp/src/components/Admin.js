@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Container, Card, CardBody, Button, Form, Input, Spinner } from 'reactstrap'
+import { Container, Card, CardBody, Button, Form, Input, Spinner, Alert } from 'reactstrap'
 import { connect } from 'react-redux';
 import { getStock, createCompany, getAllCompany, deleteCompany } from '../nodeserverapi'
 import { signedInUserMstp, signedInUserMdtp, getUserToken } from '../redux/containers/SignedInUserCtr';
@@ -7,12 +7,10 @@ import { signedInUserMstp, signedInUserMdtp, getUserToken } from '../redux/conta
 class Admin extends Component {
   constructor() {
     super();
-    this.state = { companyData: [], companyStr: '', loading: false }
+    this.state = { companyData: [], companyStr: '', loading: false, result: '' }
   }
 
-  componentDidMount = () => { 
-    this.getCompanies()
-  }
+  componentDidMount = () => this.getCompanies()
 
   onChangecompanyStr = (e) => {
     this.setState({ companyStr: e.target.value.toUpperCase()})
@@ -28,7 +26,7 @@ class Admin extends Component {
          this.setState({ loading: false })
        },
        error => {
-         console.log(error.message)
+         this.setState({result: error.message})
        } 
      )
   }
@@ -44,7 +42,7 @@ class Admin extends Component {
           this.getCompanies()
         },
         error => {
-          console.log(error.message)
+          this.setState({result: error.message, companyStr: ''})
         }
       )
     }
@@ -56,7 +54,7 @@ class Admin extends Component {
         this.setState({ companyData: response.data})
       },
       error => {
-        console.log(error.message)
+        this.setState({result: error.message})
       }
     )
   }
@@ -68,14 +66,16 @@ class Admin extends Component {
         this.getCompanies()
       },
       error => {
-        console.log(error.message)
+        this.setState({result: error.message})
       }
     )
   }
 
+  removeResult =() => this.setState({result: ''})
+
 
   render() {
-    let { companyData, companyStr, loading } = this.state
+    let { companyData, companyStr, loading, result } = this.state
     return (
       <Container className='dashboard'>
         <Card>
@@ -86,6 +86,7 @@ class Admin extends Component {
             </div>
 
             {loading && <Spinner size='sm' color='primary'></Spinner>}
+            {result && <Alert toggle={this.removeResult} color='danger' size='sm' >{result}</Alert>}
 
             <Form onSubmit={this.createCompanies}>
               <Input bsSize='sm' name='companyStr' placeholder='Enter Company Here' value={companyStr} onChange={this.onChangecompanyStr}/>

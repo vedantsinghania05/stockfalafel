@@ -2,7 +2,9 @@ import mongoose, { Schema } from 'mongoose'
 
 const companySchema = new Schema({
   ticker: {
-    type: String
+    type: String,
+    trim: true,
+    unique: true
   }
 }, {
   timestamps: true

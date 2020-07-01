@@ -60,12 +60,7 @@ export const update = ({ params, body, user }, res, next) => {
         if (!user) return next(resNotFound('Failed to find user'));
 
         let usersCompanies = [...user.companies]
-
-        console.log('>>>>>>', usersCompanies, typeof usersCompanies)
-        console.log('>>>>>>', gCompanies._id, typeof gCompanies._id)
-
         usersCompanies.push(gCompanies._id)
-        console.log('>>>>>>', usersCompanies)
 
         if (body.email) user.email = body.email;
         if (gCompanies) user.companies = usersCompanies
