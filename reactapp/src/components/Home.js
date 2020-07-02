@@ -8,7 +8,8 @@ import { updateUser, getStoredStockData, getUser, getUsersCompanies } from '../n
 class Home extends Component {
   constructor() {
     super();
-    this.state = { result: '', userCompanyList: [], showGraph: false, selectedTicker: undefined, stockChartXValues: [], stockChartYValues: [], companiesStr: '', loading: false }
+    this.state = { result: '', userCompanyList: [], showGraph: false, selectedTicker: undefined, stockChartXValues: [], stockChartYValues: [], 
+    companiesStr: '', loading: false, stockData: [] }
   }
 
   componentDidMount = () => {
@@ -79,7 +80,6 @@ class Home extends Component {
   }
 
   sendtoGraph = (company) => {
-    let { stockChartXValues, stockChartYValues } = this.state
     let companyId = undefined
 
     if (company.id) companyId = company.id
@@ -91,14 +91,7 @@ class Home extends Component {
 
     getStoredStockData(companyId, getUserToken(),
       response => {
-        let stockData = response.data
-
-        this.setState({ showGraph: true, selectedTicker: company.ticker })
-        for (let i in stockData) {
-          stockChartXValues.push(stockData[i].date)
-          stockChartYValues.push(stockData[i].open)    
-        }
-
+        this.setState({ showGraph: true, selectedTicker: company.ticker, stockData: response.data }, () => this.fn(this.state.stockData))
       },
       error => {
         this.setState({result: error.message})
@@ -150,6 +143,17 @@ class Home extends Component {
   back = () => this.setState({ showGraph: false, stockChartXValues: [], stockChartYValues: [], loading: false })
 
   removeResult =() => this.setState({result: ''})
+
+  fn = (stockData) => {
+    let {stockChartXValues, stockChartYValues} = this.state
+    for (let i = 0; i < stockData.length-1; i++) {
+      let b = +i+1
+      stockChartXValues.push(stockData[i].date)
+      stockChartYValues.push(stockData[i].open)
+      if (stockData[i].open > stockData[b].open) console.log('the stock increased by', (((stockData[i].open - stockData[b].open)/stockData[i].open)*100).toFixed(3)+'%')
+      else console.log('the stock decreased by', (((stockData[i].open - stockData[b].open)/stockData[i].open)*100).toFixed(3)+'%')
+    }
+  }
 
 
   render() {
