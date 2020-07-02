@@ -150,8 +150,8 @@ class Home extends Component {
       let b = +i+1
       stockChartXValues.push(stockData[i].date)
       stockChartYValues.push(stockData[i].open)
-      if (stockData[i].open > stockData[b].open) console.log('the stock increased by', (((stockData[i].open - stockData[b].open)/stockData[i].open)*100).toFixed(3)+'%')
-      else console.log('the stock decreased by', (((stockData[i].open - stockData[b].open)/stockData[i].open)*100).toFixed(3)+'%')
+      if (stockData[i].open > stockData[b].open) console.log('+' + (((stockData[i].open - stockData[b].open)/stockData[i].open)*100).toFixed(3)+'%')
+      else console.log((((stockData[i].open - stockData[b].open)/stockData[i].open)*100).toFixed(3)+'%')
     }
   }
 
