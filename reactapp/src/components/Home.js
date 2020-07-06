@@ -9,7 +9,7 @@ class Home extends Component {
   constructor() {
     super();
     this.state = { result: '', userCompanyList: [], showGraph: false, selectedTicker: undefined, stockChartXValues: [], stockChartYValues: [], 
-    companiesStr: '', loading: false, stockData: [] }
+    companiesStr: '', loading: false, percentChange: [], numericChange: [] }
   }
 
   componentDidMount = () => {
@@ -88,10 +88,10 @@ class Home extends Component {
     this.setState({loading: true})
     setTimeout(() => { this.setState({ loading: false }) }, 5000)
 
-
     getStoredStockData(companyId, getUserToken(),
       response => {
-        this.setState({ showGraph: true, selectedTicker: company.ticker, stockData: response.data }, () => this.fn(this.state.stockData))
+        this.setState({ showGraph: true, selectedTicker: company.ticker }) 
+        this.fn(response.data)
       },
       error => {
         this.setState({result: error.message})
@@ -145,19 +145,25 @@ class Home extends Component {
   removeResult =() => this.setState({result: ''})
 
   fn = (stockData) => {
-    let {stockChartXValues, stockChartYValues} = this.state
+    let { stockChartXValues, stockChartYValues, percentChange, numericChange } = this.state
     for (let i = 0; i < stockData.length-1; i++) {
       let b = +i+1
       stockChartXValues.push(stockData[i].date)
       stockChartYValues.push(stockData[i].open)
-      if (stockData[i].open > stockData[b].open) console.log('+' + (((stockData[i].open - stockData[b].open)/stockData[i].open)*100).toFixed(3)+'%')
-      else console.log((((stockData[i].open - stockData[b].open)/stockData[i].open)*100).toFixed(3)+'%')
+      if (stockData[i].open > stockData[b].open)  {
+        numericChange.push((stockData[i].open - stockData[b].open).toFixed(2))
+        percentChange.push('+' + (((stockData[i].open - stockData[b].open)/stockData[i].open)*100).toFixed(3)+'%')
+      }
+      else {
+        numericChange.push((stockData[i].open - stockData[b].open).toFixed(2))
+        percentChange.push((((stockData[i].open - stockData[b].open)/stockData[i].open)*100).toFixed(3)+'%')
+      }
     }
   }
 
 
   render() {
-    let { result, userCompanyList, showGraph, selectedTicker, stockChartXValues, stockChartYValues, companiesStr, loading } = this.state
+    let { result, userCompanyList, showGraph, selectedTicker, stockChartXValues, stockChartYValues, companiesStr, loading, percentChange, numericChange } = this.state
     return (
       <Container className='dashboard'>
         <Card>
@@ -176,7 +182,7 @@ class Home extends Component {
                   <Input bsSize='sm' name='companiesStr' placeholder='Enter Companies Here' value={companiesStr} onChange={this.onChangeCompaniesStr}/>
                 </Form>
 
-                  <table size='sm'>
+                <table size='sm'>
                   <tbody>
                     {userCompanyList && userCompanyList.map((company, i) => <tr key={i}>
                       <td>{company.ticker}</td>
@@ -190,16 +196,28 @@ class Home extends Component {
             {showGraph && <div>
               <Plot
                 data={[
-                  {
-                    x: stockChartXValues,
-                    y: stockChartYValues,
-                    type: 'scatter',
-                    mode: 'lines+markers',
-                    marker: {color: 'red'},
-                  }
+                  { name: 'Price', x: stockChartXValues, y: stockChartYValues, marker: {color: 'red'}, type: 'scatter', mode: 'lines+markers' },
+                  { name: '% Change', x: stockChartXValues, y: percentChange, marker: {name:'bob', color: 'blue'}, type: 'scatter', mode: 'lines+markers' }
                 ]}
-                layout={{width: 720, height: 440, title: selectedTicker}}
+                layout={{ scrollZoom: true, width: 720, height: 440, title: selectedTicker }}
               />
+
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Change(%)</th>
+                    <th>Change($)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {stockChartXValues.map((u, i) => <tr key={i}>
+                    <td>{u.split('T')[0]}</td>
+                    <td>{percentChange[i]}</td>
+                    <td>{numericChange[i]}</td>
+                  </tr>)}
+                </tbody>
+              </table>
             </div>}
 
           </CardBody>
