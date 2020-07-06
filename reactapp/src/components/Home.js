@@ -9,7 +9,7 @@ class Home extends Component {
   constructor() {
     super();
     this.state = { result: '', userCompanyList: [], showGraph: false, selectedTicker: undefined, stockChartXValues: [], stockChartYValues: [], 
-    companiesStr: '', loading: false, stockData: [] }
+    recentMovingAvgs: [], olderMovingAvgs: [], companiesStr: '', loading: false, stockData: [] }
   }
 
   componentDidMount = () => {
@@ -145,19 +145,62 @@ class Home extends Component {
   removeResult =() => this.setState({result: ''})
 
   fn = (stockData) => {
-    let {stockChartXValues, stockChartYValues} = this.state
-    for (let i = 0; i < stockData.length-1; i++) {
+    let {stockChartXValues, stockChartYValues } = this.state
+
+    let tempRecentMovingAvgs = []
+    let tempOlderMovingAvgs = []
+
+    let sortedStockData = stockData.sort((b,a) => new Date(b.date) - new Date(a.date))
+
+    for (let i = 0; i < sortedStockData.length-1; i++) {
+
+      // Calculate 50 day moving average
+
+      let lastFiftyAdded = 0
+      let lastFiftyAvg = -1
+      let addedNoCount50 = 0
+
+      for (let i2 = 0; i2 <= 50; i2++) { 
+        if (sortedStockData[i-50+i2] && sortedStockData[i-50+i2].open) {
+          lastFiftyAdded = lastFiftyAdded + sortedStockData[i-50+i2].open
+          addedNoCount50++
+        }
+      }
+
+      lastFiftyAvg = lastFiftyAdded/addedNoCount50
+      tempRecentMovingAvgs.push(lastFiftyAvg)
+
+      // Calculate 200 day moving average
+
+      let last200Added = 0
+      let last200Avg = -1
+      let addedNoCount200 = 0
+
+      for (let i2 = 0; i2 <= 200; i2++) { 
+        if (sortedStockData[i-200+i2] && sortedStockData[i-200+i2].open) {
+          last200Added = last200Added + sortedStockData[i-200+i2].open
+          addedNoCount200++
+        }
+      }
+
+      last200Avg = last200Added/addedNoCount200
+      tempOlderMovingAvgs.push(last200Avg)
+
+      // Stock Data
+
       let b = +i+1
-      stockChartXValues.push(stockData[i].date)
-      stockChartYValues.push(stockData[i].open)
-      if (stockData[i].open > stockData[b].open) console.log('+' + (((stockData[i].open - stockData[b].open)/stockData[i].open)*100).toFixed(3)+'%')
-      else console.log((((stockData[i].open - stockData[b].open)/stockData[i].open)*100).toFixed(3)+'%')
+      stockChartXValues.push(sortedStockData[i].date)
+      stockChartYValues.push(sortedStockData[i].open)
+      if (sortedStockData[i].open > sortedStockData[b].open) console.log('+' + (((sortedStockData[i].open - sortedStockData[b].open)/sortedStockData[i].open)*100).toFixed(3)+'%')
+      else console.log((((sortedStockData[i].open - sortedStockData[b].open)/sortedStockData[i].open)*100).toFixed(3)+'%')
+    
     }
+    this.setState({ recentMovingAvgs: tempRecentMovingAvgs, olderMovingAvgs: tempOlderMovingAvgs })
   }
 
 
   render() {
-    let { result, userCompanyList, showGraph, selectedTicker, stockChartXValues, stockChartYValues, companiesStr, loading } = this.state
+    let { result, userCompanyList, showGraph, selectedTicker, stockChartXValues, stockChartYValues, recentMovingAvgs, olderMovingAvgs, companiesStr, loading } = this.state
     return (
       <Container className='dashboard'>
         <Card>
@@ -193,9 +236,24 @@ class Home extends Component {
                   {
                     x: stockChartXValues,
                     y: stockChartYValues,
+                    name: 'data',
                     type: 'scatter',
                     mode: 'lines+markers',
                     marker: {color: 'red'},
+                  },
+                  {
+                    x: stockChartXValues,
+                    y: recentMovingAvgs,
+                    name: '50 day moving average',
+                    type: 'scatter',
+                    marker: {color: 'orange'}
+                  },
+                  {
+                    x: stockChartXValues,
+                    y: olderMovingAvgs,
+                    name: '200 day moving average',
+                    type: 'scatter',
+                    marker: {color: 'green'}
                   }
                 ]}
                 layout={{width: 720, height: 440, title: selectedTicker}}
