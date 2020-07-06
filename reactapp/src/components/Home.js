@@ -9,7 +9,7 @@ class Home extends Component {
   constructor() {
     super();
     this.state = { result: '', userCompanyList: [], showGraph: false, selectedTicker: undefined, stockChartXValues: [], stockChartYValues: [], 
-    companiesStr: '', loading: false, percentChange: [], numericChange: [] }
+    companiesStr: '', loading: false, percentChange: [], numericChange: [], recentMovingAvgs: [], olderMovingAvgs: [], stockAvgXValues: [] }
   }
 
   componentDidMount = () => {
@@ -145,25 +145,68 @@ class Home extends Component {
   removeResult =() => this.setState({result: ''})
 
   fn = (stockData) => {
-    let { stockChartXValues, stockChartYValues, percentChange, numericChange } = this.state
-    for (let i = 0; i < stockData.length-1; i++) {
+    let {stockChartXValues, stockChartYValues, numericChange, percentChange, stockAvgXValues } = this.state
+    let tempRecentMovingAvgs = []
+    let tempOlderMovingAvgs = []
+    let sortedStockData = [...stockData]    
+    sortedStockData.sort((b,a) => new Date(b.date) - new Date(a.date))
+
+    for (let i = 0; i < sortedStockData.length-1; i++) {
+      // Calculate 50 day moving average
+
+      let lastFiftyAdded = 0
+      let lastFiftyAvg = -1
+      let addedNoCount50 = 0
+
+      for (let i2 = 0; i2 <= 50; i2++) { 
+        if (sortedStockData[i-50+i2] && sortedStockData[i-50+i2].open) {
+          lastFiftyAdded = lastFiftyAdded + sortedStockData[i-50+i2].open
+          addedNoCount50++
+        }
+      }
+
+      lastFiftyAvg = lastFiftyAdded/addedNoCount50
+      tempRecentMovingAvgs.push(lastFiftyAvg.toFixed(2))
+
+      // Calculate 200 day moving average
+
+      let last200Added = 0
+      let last200Avg = -1
+      let addedNoCount200 = 0
+
+      for (let i2 = 0; i2 <= 200; i2++) { 
+        if (sortedStockData[i-200+i2] && sortedStockData[i-200+i2].open) {
+          last200Added = last200Added + sortedStockData[i-200+i2].open
+          addedNoCount200++
+        }
+      }
+
+      last200Avg = last200Added/addedNoCount200
+      tempOlderMovingAvgs.push(last200Avg.toFixed(2))
+
+      // Stock Data
+
       let b = +i+1
+      
+      stockAvgXValues.push(sortedStockData[i].date)
       stockChartXValues.push(stockData[i].date)
       stockChartYValues.push(stockData[i].open)
       if (stockData[i].open > stockData[b].open)  {
         numericChange.push((stockData[i].open - stockData[b].open).toFixed(2))
-        percentChange.push('+' + (((stockData[i].open - stockData[b].open)/stockData[i].open)*100).toFixed(3)+'%')
+        percentChange.push((((stockData[i].open - stockData[b].open)/stockData[i].open)*100).toFixed(3)+'%')
       }
       else {
         numericChange.push((stockData[i].open - stockData[b].open).toFixed(2))
         percentChange.push((((stockData[i].open - stockData[b].open)/stockData[i].open)*100).toFixed(3)+'%')
       }
+    
     }
+    this.setState({ recentMovingAvgs: tempRecentMovingAvgs, olderMovingAvgs: tempOlderMovingAvgs })
   }
 
 
   render() {
-    let { result, userCompanyList, showGraph, selectedTicker, stockChartXValues, stockChartYValues, companiesStr, loading, percentChange, numericChange } = this.state
+    let { result, userCompanyList, showGraph, selectedTicker, stockChartXValues, stockChartYValues, recentMovingAvgs, olderMovingAvgs, companiesStr, loading, percentChange, numericChange, stockAvgXValues } = this.state
     return (
       <Container className='dashboard'>
         <Card>
@@ -196,10 +239,13 @@ class Home extends Component {
             {showGraph && <div>
               <Plot
                 data={[
-                  { name: 'Price', x: stockChartXValues, y: stockChartYValues, marker: {color: 'red'}, type: 'scatter', mode: 'lines+markers' },
-                  { name: '% Change', x: stockChartXValues, y: percentChange, marker: {name:'bob', color: 'blue'}, type: 'scatter', mode: 'lines+markers' }
+                  { x: stockChartXValues, y: stockChartYValues, name: 'Price', type: 'scatter', marker: {color: 'red'}, mode: 'lines+markers' },
+                  { x: stockChartXValues, y: percentChange, name: '% Change', type: 'scatter', marker: {color: 'blue'} },
+                  { x: stockAvgXValues, y: recentMovingAvgs, name: '50 Day Moving Avg', type: 'scatter', marker: {color: 'orange'} },
+                  { x: stockAvgXValues,y: olderMovingAvgs,name: '200 Day Moving Avg', type: 'scatter', marker: {color: 'green'} }
                 ]}
-                layout={{ scrollZoom: true, width: 720, height: 440, title: selectedTicker }}
+                layout={{ width: 720, height: 440, title: selectedTicker }}
+                config={{ responsive: true }}
               />
 
               <table>
@@ -215,6 +261,7 @@ class Home extends Component {
                     <td>{u.split('T')[0]}</td>
                     <td>{percentChange[i]}</td>
                     <td>{numericChange[i]}</td>
+                    <td>{stockChartYValues[i]}</td>
                   </tr>)}
                 </tbody>
               </table>
