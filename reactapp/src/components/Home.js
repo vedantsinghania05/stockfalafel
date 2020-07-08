@@ -3,13 +3,13 @@ import { Container, Card, CardBody, Button, Input, Form, Spinner, Alert } from '
 import Plot from 'react-plotly.js';
 import { signedInUserMstp, signedInUserMdtp, getUserToken } from '../redux/containers/SignedInUserCtr';
 import { connect } from 'react-redux';
-import { updateUser, getStoredStockData, getUser, getUsersCompanies } from '../nodeserverapi'
+import { updateUser, getStoredStockData, getUser, getUsersCompanies, getCompanyByTicker } from '../nodeserverapi'
 
 class Home extends Component {
   constructor() {
     super();
     this.state = { result: '', userCompanyList: [], showGraph: false, selectedTicker: undefined, stockChartXValues: [], stockChartYValues: [], 
-    companiesStr: '', loading: false, percentChange: [], numericChange: [], recentMovingAvgs: [], olderMovingAvgs: [], stockAvgXValues: [] }
+    companiesStr: '', loading: false, percentChange: [], numericChange: [], recentMovingAvgs: [], olderMovingAvgs: [], stockAvgXValues: [], comparisonCompany: '' }
   }
 
   componentDidMount = () => {
@@ -37,6 +37,8 @@ class Home extends Component {
   }
 
   onChangeCompaniesStr = (e) => this.setState({ companiesStr: e.target.value.toUpperCase()})
+
+  onChangeComparison = (e) => this.setState({ comparisonCompany: e.target.value.toUpperCase() })
 
   chooseCompanies = (e) => {
     let { companiesStr } = this.state
@@ -204,9 +206,34 @@ class Home extends Component {
     this.setState({ recentMovingAvgs: tempRecentMovingAvgs, olderMovingAvgs: tempOlderMovingAvgs })
   }
 
+  chooseComparison = (e) => {
+    e.preventDefault()
+    let { comparisonCompany } = this.state;
+    let companyId = undefined
+
+    getCompanyByTicker(getUserToken(), comparisonCompany,
+      response => {
+        if (response.data.id) companyId = response.data.id
+        if (response.data._id) companyId = response.data._id
+
+        getStoredStockData(companyId, getUserToken(),
+          response => {
+            console.log('comparison company stock data: ', response.data)
+          },
+          error => {
+            this.setState({result: error.message})
+          }
+        )
+      },
+      error => {
+        this.setState({result: error.message})
+      }
+    )
+  }
+
 
   render() {
-    let { result, userCompanyList, showGraph, selectedTicker, stockChartXValues, stockChartYValues, recentMovingAvgs, olderMovingAvgs, companiesStr, loading, percentChange, numericChange, stockAvgXValues } = this.state
+    let { result, comparisonCompany, userCompanyList, showGraph, selectedTicker, stockChartXValues, stockChartYValues, recentMovingAvgs, olderMovingAvgs, companiesStr, loading, percentChange, numericChange, stockAvgXValues } = this.state
     return (
       <Container className='dashboard'>
         <Card>
@@ -247,6 +274,11 @@ class Home extends Component {
                 layout={{ width: 720, height: 440, title: selectedTicker }}
                 config={{ responsive: true }}
               />
+
+              {/* Replace with Vedant Bhai's UI, just for testing */}
+              <Form onSubmit={this.chooseComparison}>
+                <Input bsSize='sm' name='comparisonCompany' placeholder='Enter Company to Compare Here' value={comparisonCompany} onChange={this.onChangeComparison}/>
+              </Form>
 
               <table>
                 <thead>
