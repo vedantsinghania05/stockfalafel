@@ -9,7 +9,7 @@ class Home extends Component {
   constructor() {
     super();
     this.state = { result: '', userCompanyList: [], showGraph: false, selectedTicker: undefined, stockChartXValues: [], stockChartYValues: [], 
-    companiesStr: '', loading: false, percentChange: [], numericChange: [], recentMovingAvgs: [], olderMovingAvgs: [], stockAvgXValues: [] }
+    companiesStr: '', loading: false, percentChange: [], numericChange: [], recentMovingAvgs: [], olderMovingAvgs: [], stockAvgXValues: [], toggleGraph: false, showDataTable: false }
   }
 
   componentDidMount = () => {
@@ -36,7 +36,7 @@ class Home extends Component {
 
   }
 
-  onChangeCompaniesStr = (e) => this.setState({ companiesStr: e.target.value.toUpperCase()})
+  onChangeCompaniesStr = (e) => this.setState({ companiesStr: e.target.value.toUpperCase() })
 
   chooseCompanies = (e) => {
     let { companiesStr } = this.state
@@ -140,9 +140,9 @@ class Home extends Component {
 
   }
 
-  back = () => this.setState({ showGraph: false, stockChartXValues: [], stockChartYValues: [], loading: false })
+  back = () => this.setState({ showGraph: false, stockChartXValues: [], stockChartYValues: [], loading: false, showDataTable: false, toggleGraph: false })
 
-  removeResult =() => this.setState({result: ''})
+  removeResult = () => this.setState({result: ''})
 
   fn = (stockData) => {
     let {stockChartXValues, stockChartYValues, numericChange, percentChange, stockAvgXValues } = this.state
@@ -190,7 +190,7 @@ class Home extends Component {
       
       stockAvgXValues.push(sortedStockData[i].date)
       stockChartXValues.push(stockData[i].date)
-      stockChartYValues.push(stockData[i].open)
+      stockChartYValues.push(stockData[i].open.toFixed(2))
       if (stockData[i].open > stockData[b].open)  {
         numericChange.push((stockData[i].open - stockData[b].open).toFixed(2))
         percentChange.push((((stockData[i].open - stockData[b].open)/stockData[i].open)*100).toFixed(3)+'%')
@@ -204,56 +204,82 @@ class Home extends Component {
     this.setState({ recentMovingAvgs: tempRecentMovingAvgs, olderMovingAvgs: tempOlderMovingAvgs })
   }
 
+  graphToggle = () => this.setState({ toggleGraph: !this.state.toggleGraph })
+
+  tableToggle = () => this.setState({ showDataTable: !this.state.showDataTable })
 
   render() {
-    let { result, userCompanyList, showGraph, selectedTicker, stockChartXValues, stockChartYValues, recentMovingAvgs, olderMovingAvgs, companiesStr, loading, percentChange, numericChange, stockAvgXValues } = this.state
+    let { result, userCompanyList, showGraph, selectedTicker, stockChartXValues, stockChartYValues, recentMovingAvgs, olderMovingAvgs, companiesStr, loading, percentChange, 
+    numericChange, stockAvgXValues, toggleGraph, showDataTable } = this.state
     return (
       <Container className='dashboard'>
         <Card>
           <CardBody>
+    
+            <div className="card__title">
+              <h5 className="bold-text">{showGraph ? <Button size='sm' color='primary' onClick={this.back}>{"<-"}</Button> : "Home"}</h5>
+            </div>
 
-              <div className="card__title">
-                <h5 className="bold-text">{showGraph ? <Button size='sm' color='primary' onClick={this.back}>{"<-"}</Button> : "Home"}</h5>
-              </div>
+            {result && <Alert toggle={this.removeResult} color='danger' size='sm' >{result}</Alert>}
 
-              {result && <Alert toggle={this.removeResult} color='danger' size='sm' >{result}</Alert>}
+            {!showGraph && <div>
+              {loading && <Spinner size='sm' color='primary'></Spinner>}
 
-              {!showGraph && <div>
-                {loading && <Spinner size='sm' color='primary'></Spinner>}
+              <Form onSubmit={this.chooseCompanies}>
+                <Input bsSize='sm' name='companiesStr' placeholder='Enter Companies Here' value={companiesStr} onChange={this.onChangeCompaniesStr}/>
+              </Form>
 
-                <Form onSubmit={this.chooseCompanies}>
-                  <Input bsSize='sm' name='companiesStr' placeholder='Enter Companies Here' value={companiesStr} onChange={this.onChangeCompaniesStr}/>
-                </Form>
-
-                <table size='sm'>
-                  <tbody>
-                    {userCompanyList && userCompanyList.map((company, i) => <tr key={i}>
-                      <td>{company.ticker}</td>
-                      <td><Button size='sm' color='primary' disabled={loading} onClick={() => this.sendtoGraph(company)}>{"->"}</Button></td>
-                      <td><Button size='sm' color='primary' disabled={loading} onClick={() => this.deleteCompany(company)}>x</Button></td>
-                    </tr>)}
-                  </tbody>
-                </table>
-              </div>}
+              <table>
+                <tbody>
+                  {userCompanyList && userCompanyList.map((company, i) => <tr key={i}>
+                    <td>{company.ticker}</td>
+                    <td><Button size='sm' color='primary' disabled={loading} onClick={() => this.sendtoGraph(company)}>{"->"}</Button></td>
+                    <td><Button size='sm' color='primary' disabled={loading} onClick={() => this.deleteCompany(company)}>x</Button></td>
+                  </tr>)}
+                </tbody>
+              </table>
+            </div>}
 
             {showGraph && <div>
-              <Plot
+              <Button size='sm' color='primary' onClick={this.graphToggle}>{toggleGraph ? 'Show Data':'Compare Companies'}</Button>
+
+              {!toggleGraph && <Plot
                 data={[
                   { x: stockChartXValues, y: stockChartYValues, name: 'Price', type: 'scatter', marker: {color: 'red'}, mode: 'lines+markers' },
                   { x: stockChartXValues, y: percentChange, name: '% Change', type: 'scatter', marker: {color: 'blue'} },
                   { x: stockAvgXValues, y: recentMovingAvgs, name: '50 Day Moving Avg', type: 'scatter', marker: {color: 'orange'} },
                   { x: stockAvgXValues,y: olderMovingAvgs,name: '200 Day Moving Avg', type: 'scatter', marker: {color: 'green'} }
                 ]}
-                layout={{ width: 720, height: 440, title: selectedTicker }}
-                config={{ responsive: true }}
-              />
+                layout={{ title: selectedTicker, height: 400 }}
+                useResizeHandler
+                style={{ width: '90%' }}
+              />}
 
-              <table>
+              {toggleGraph && <div>
+                <Form>
+                  <Input bsSize='sm' placeholder='Enter Company to Compare' />
+                </Form>
+
+                <Plot 
+                  data={[
+                    { x: stockChartXValues, y: stockChartYValues, name: selectedTicker, type: 'scatter', marker: {color: 'red'}, mode: 'lines+markers' },
+                    { x: ['2020-6-15', '2020-6-16', '2020-6-17'], y: [100, 103, 106], name: "TEST", type: 'scatter', marker: {color: 'blue'}, mode: 'lines+markers' }
+                  ]}
+                  layout={{ title: 'Company Comparison', height: 400 }}
+                  useResizeHandler
+                  style={{ width: '90%' }}
+                />
+              </div>}
+
+              {!toggleGraph && <Button size='sm' color='primary' onClick={this.tableToggle}>{showDataTable ? 'Hide Table':'Show Table'}</Button>}
+
+              {showDataTable && <table>
                 <thead>
                   <tr>
                     <th>Date</th>
                     <th>Change(%)</th>
                     <th>Change($)</th>
+                    <th>Price($)</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -264,7 +290,7 @@ class Home extends Component {
                     <td>{stockChartYValues[i]}</td>
                   </tr>)}
                 </tbody>
-              </table>
+              </table>}
             </div>}
 
           </CardBody>
