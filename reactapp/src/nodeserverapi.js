@@ -106,6 +106,17 @@ export const createCompany = (ticker, successCbk, errorCbk) => {
   .catch(errorCbk);
 }
 
+export const getCompanyByTicker = (token, ticker, successCbk, errorCbk) => {
+  axiosInstance.put(nodeserverUrl + '/companies/ticker',
+    {
+      access_token: token,
+      ticker: ticker
+    }
+  )
+  .then(successCbk)
+  .catch(errorCbk)
+}
+
 export const getAllCompany = (token, successCbk, errorCbk) => {
   axiosInstance.get(nodeserverUrl + '/companies',
     { headers: { Authorization: 'Bearer ' + token } }

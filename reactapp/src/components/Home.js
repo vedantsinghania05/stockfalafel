@@ -3,13 +3,14 @@ import { Container, Card, CardBody, Button, Input, Form, Spinner, Alert } from '
 import Plot from 'react-plotly.js';
 import { signedInUserMstp, signedInUserMdtp, getUserToken } from '../redux/containers/SignedInUserCtr';
 import { connect } from 'react-redux';
-import { updateUser, getStoredStockData, getUser, getUsersCompanies } from '../nodeserverapi'
+import { updateUser, getStoredStockData, getUser, getUsersCompanies, getCompanyByTicker } from '../nodeserverapi'
 
 class Home extends Component {
   constructor() {
     super();
     this.state = { result: '', userCompanyList: [], showGraph: false, selectedTicker: undefined, stockChartXValues: [], stockChartYValues: [], 
-    companiesStr: '', loading: false, percentChange: [], numericChange: [], recentMovingAvgs: [], olderMovingAvgs: [], stockAvgXValues: [], toggleGraph: false, showDataTable: false }
+    companiesStr: '', loading: false, percentChange: [], numericChange: [], recentMovingAvgs: [], olderMovingAvgs: [], stockAvgXValues: [], 
+    toggleGraph: false, showDataTable: false, comparisonCompany: '', comparisonXVals: [], comparisonYVals: [], comparisonLabel: '' }
   }
 
   componentDidMount = () => {
@@ -37,6 +38,8 @@ class Home extends Component {
   }
 
   onChangeCompaniesStr = (e) => this.setState({ companiesStr: e.target.value.toUpperCase() })
+
+  onChangeComparison = (e) => this.setState({ comparisonCompany: e.target.value.toUpperCase() })
 
   chooseCompanies = (e) => {
     let { companiesStr } = this.state
@@ -86,15 +89,15 @@ class Home extends Component {
     if (company._id) companyId = company._id
 
     this.setState({loading: true})
-    setTimeout(() => { this.setState({ loading: false }) }, 5000)
 
     getStoredStockData(companyId, getUserToken(),
       response => {
         this.setState({ showGraph: true, selectedTicker: company.ticker }) 
         this.fn(response.data)
+        this.setState({loading: false})
       },
       error => {
-        this.setState({result: error.message})
+        this.setState({result: error.message, loading: false})
       }
     )
   }
@@ -208,9 +211,42 @@ class Home extends Component {
 
   tableToggle = () => this.setState({ showDataTable: !this.state.showDataTable })
 
+  chooseComparison = (e) => {
+    e.preventDefault()
+    this.setState({loading: true})
+    let { comparisonCompany } = this.state;
+    let companyId = undefined
+
+    getCompanyByTicker(getUserToken(), comparisonCompany,
+      response => {
+        if (response.data.id) companyId = response.data.id
+        if (response.data._id) companyId = response.data._id
+
+        getStoredStockData(companyId, getUserToken(),
+          response => {
+            console.log('comparison company stock data: ', response.data)
+            this.setState({comparisonXVals: [], comparisonYVals: [] })
+            for (let i in response.data) {
+              this.state.comparisonXVals.push(response.data[i].date)
+              this.state.comparisonYVals.push(response.data[i].open)
+            }
+            this.setState({comparisonLabel: comparisonCompany, comparisonCompany: '', loading: false})
+          },
+          error => {
+            this.setState({result: error.message})
+          }
+        )
+      },
+      error => {
+        this.setState({result: error.message, loading: false})
+      }
+    )
+  }
+
+
   render() {
-    let { result, userCompanyList, showGraph, selectedTicker, stockChartXValues, stockChartYValues, recentMovingAvgs, olderMovingAvgs, companiesStr, loading, percentChange, 
-    numericChange, stockAvgXValues, toggleGraph, showDataTable } = this.state
+    let { result, comparisonCompany, userCompanyList, showGraph, selectedTicker, stockChartXValues, stockChartYValues, recentMovingAvgs, olderMovingAvgs, 
+    companiesStr, loading, percentChange, numericChange, stockAvgXValues, toggleGraph, showDataTable, comparisonXVals, comparisonYVals, comparisonLabel } = this.state
     return (
       <Container className='dashboard'>
         <Card>
@@ -221,10 +257,9 @@ class Home extends Component {
             </div>
 
             {result && <Alert toggle={this.removeResult} color='danger' size='sm' >{result}</Alert>}
+            {loading && <Spinner size='sm' color='primary'></Spinner>}
 
             {!showGraph && <div>
-              {loading && <Spinner size='sm' color='primary'></Spinner>}
-
               <Form onSubmit={this.chooseCompanies}>
                 <Input bsSize='sm' name='companiesStr' placeholder='Enter Companies Here' value={companiesStr} onChange={this.onChangeCompaniesStr}/>
               </Form>
@@ -253,21 +288,23 @@ class Home extends Component {
                 layout={{ title: selectedTicker, height: 400 }}
                 useResizeHandler
                 style={{ width: '90%' }}
+                config={{ scrollZoom: true }}
               />}
 
               {toggleGraph && <div>
-                <Form>
-                  <Input bsSize='sm' placeholder='Enter Company to Compare' />
+                <Form onSubmit={this.chooseComparison}>
+                  <Input bsSize='sm' name='comparisonCompany' placeholder='Enter Company to Compare Here' value={comparisonCompany} onChange={this.onChangeComparison}/>
                 </Form>
 
                 <Plot 
                   data={[
                     { x: stockChartXValues, y: stockChartYValues, name: selectedTicker, type: 'scatter', marker: {color: 'red'}, mode: 'lines+markers' },
-                    { x: ['2020-6-15', '2020-6-16', '2020-6-17'], y: [100, 103, 106], name: "TEST", type: 'scatter', marker: {color: 'blue'}, mode: 'lines+markers' }
+                    { x: comparisonXVals, y: comparisonYVals, name: comparisonLabel, type: 'scatter', marker: {color: 'blue'}, mode: 'lines+markers' }
                   ]}
                   layout={{ title: 'Company Comparison', height: 400 }}
                   useResizeHandler
                   style={{ width: '90%' }}
+                  config={{ scrollZoom: true }}
                 />
               </div>}
 
