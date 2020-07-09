@@ -281,7 +281,6 @@ class Home extends Component {
               {!toggleGraph && <Plot
                 data={[
                   { x: stockChartXValues, y: stockChartYValues, name: 'Price', type: 'scatter', marker: {color: 'red'}, mode: 'lines+markers' },
-                  { x: stockChartXValues, y: percentChange, name: '% Change', type: 'scatter', marker: {color: 'blue'} },
                   { x: stockAvgXValues, y: recentMovingAvgs, name: '50 Day Moving Avg', type: 'scatter', marker: {color: 'orange'} },
                   { x: stockAvgXValues,y: olderMovingAvgs,name: '200 Day Moving Avg', type: 'scatter', marker: {color: 'green'} }
                 ]}
