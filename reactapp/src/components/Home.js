@@ -10,7 +10,8 @@ class Home extends Component {
     super();
     this.state = { result: '', userCompanyList: [], showGraph: false, selectedTicker: undefined, stockChartXValues: [], stockChartYValues: [], 
     companiesStr: '', loading: false, percentChange: [], numericChange: [], recentMovingAvgs: [], olderMovingAvgs: [], stockAvgXValues: [], 
-    toggleGraph: false, showDataTable: false, comparisonCompany: '', comparisonXVals: [], comparisonYVals: [], comparisonLabel: '' }
+    toggleGraph: false, showDataTable: false, comparisonCompany: '', comparisonXVals: [], comparisonYVals: [], comparisonLabel: '', volume: [], 
+    high: [], low: [] }
   }
 
   componentDidMount = () => {
@@ -143,12 +144,12 @@ class Home extends Component {
 
   }
 
-  back = () => this.setState({ showGraph: false, stockChartXValues: [], stockChartYValues: [], loading: false, showDataTable: false, toggleGraph: false })
+  back = () => this.setState({ showGraph: false, stockChartXValues: [], stockChartYValues: [], loading: false, showDataTable: false, toggleGraph: false, stockAvgXValues: [], volume: [], high: [], low: [], close: [], percentChange: [], numericChange: []})
 
   removeResult = () => this.setState({result: ''})
 
   fn = (stockData) => {
-    let {stockChartXValues, stockChartYValues, numericChange, percentChange, stockAvgXValues } = this.state
+    let { stockAvgXValues, stockChartXValues, stockChartYValues, volume, high, low, numericChange, percentChange } = this.state
     let tempRecentMovingAvgs = []
     let tempOlderMovingAvgs = []
     let sortedStockData = [...stockData]    
@@ -162,8 +163,8 @@ class Home extends Component {
       let addedNoCount50 = 0
 
       for (let i2 = 0; i2 <= 50; i2++) { 
-        if (sortedStockData[i-50+i2] && sortedStockData[i-50+i2].open) {
-          lastFiftyAdded = lastFiftyAdded + sortedStockData[i-50+i2].open
+        if (sortedStockData[i-50+i2] && sortedStockData[i-50+i2].close) {
+          lastFiftyAdded = lastFiftyAdded + sortedStockData[i-50+i2].close
           addedNoCount50++
         }
       }
@@ -178,8 +179,8 @@ class Home extends Component {
       let addedNoCount200 = 0
 
       for (let i2 = 0; i2 <= 200; i2++) { 
-        if (sortedStockData[i-200+i2] && sortedStockData[i-200+i2].open) {
-          last200Added = last200Added + sortedStockData[i-200+i2].open
+        if (sortedStockData[i-200+i2] && sortedStockData[i-200+i2].close) {
+          last200Added = last200Added + sortedStockData[i-200+i2].close
           addedNoCount200++
         }
       }
@@ -190,17 +191,19 @@ class Home extends Component {
       // Stock Data
 
       let b = +i+1
-      
       stockAvgXValues.push(sortedStockData[i].date)
       stockChartXValues.push(stockData[i].date)
-      stockChartYValues.push(stockData[i].open.toFixed(2))
-      if (stockData[i].open > stockData[b].open)  {
-        numericChange.push((stockData[i].open - stockData[b].open).toFixed(2))
-        percentChange.push((((stockData[i].open - stockData[b].open)/stockData[i].open)*100).toFixed(3)+'%')
+      stockChartYValues.push(stockData[i].close.toFixed(2))
+      volume.push(stockData[i].volume)
+      high.push(stockData[i].high)
+      low.push(stockData[i].low)
+      if (stockData[i].close > stockData[b].close)  {
+        numericChange.push((stockData[i].close - stockData[b].close).toFixed(2))
+        percentChange.push((((stockData[i].close - stockData[b].close)/stockData[i].close)*100).toFixed(3)+'%')
       }
       else {
-        numericChange.push((stockData[i].open - stockData[b].open).toFixed(2))
-        percentChange.push((((stockData[i].open - stockData[b].open)/stockData[i].open)*100).toFixed(3)+'%')
+        numericChange.push((stockData[i].close - stockData[b].close).toFixed(2))
+        percentChange.push((((stockData[i].close - stockData[b].close)/stockData[i].close)*100).toFixed(3)+'%')
       }
     
     }
@@ -228,7 +231,7 @@ class Home extends Component {
             this.setState({comparisonXVals: [], comparisonYVals: [] })
             for (let i in response.data) {
               this.state.comparisonXVals.push(response.data[i].date)
-              this.state.comparisonYVals.push(response.data[i].open)
+              this.state.comparisonYVals.push(response.data[i].close)
             }
             this.setState({comparisonLabel: comparisonCompany, comparisonCompany: '', loading: false})
           },
@@ -246,7 +249,8 @@ class Home extends Component {
 
   render() {
     let { result, comparisonCompany, userCompanyList, showGraph, selectedTicker, stockChartXValues, stockChartYValues, recentMovingAvgs, olderMovingAvgs, 
-    companiesStr, loading, percentChange, numericChange, stockAvgXValues, toggleGraph, showDataTable, comparisonXVals, comparisonYVals, comparisonLabel } = this.state
+    companiesStr, loading, percentChange, numericChange, stockAvgXValues, toggleGraph, showDataTable, comparisonXVals, comparisonYVals, comparisonLabel, 
+    volume, high, low } = this.state
     return (
       <Container className='dashboard'>
         <Card>
@@ -280,14 +284,29 @@ class Home extends Component {
 
               {!toggleGraph && <Plot
                 data={[
-                  { x: stockChartXValues, y: stockChartYValues, name: 'Price', type: 'scatter', marker: {color: 'red'}, mode: 'lines+markers' },
-                  { x: stockAvgXValues, y: recentMovingAvgs, name: '50 Day Moving Avg', type: 'scatter', marker: {color: 'orange'} },
-                  { x: stockAvgXValues,y: olderMovingAvgs,name: '200 Day Moving Avg', type: 'scatter', marker: {color: 'green'} }
+                  { x: stockChartXValues, y: stockChartYValues, name: 'Close', type: 'scatter', marker: {size: 4}, mode: 'lines+markers', yaxis: 'y2' },
+                  { x: stockChartXValues, y: high, name: 'High', type: 'scatter', marker: {size: 4}, mode: 'lines+markers', yaxis: 'y2' },
+                  { x: stockChartXValues, y: low, name: 'Low', type: 'scatter', marker: {size: 4}, mode: 'lines+markers', yaxis: 'y2' },
+                  { x: stockAvgXValues, y: recentMovingAvgs, name: '50 Day MA', type: 'scatter', yaxis: 'y2' },
+                  { x: stockAvgXValues, y: olderMovingAvgs, name: '200 Day MA', type: 'scatter', yaxis: 'y2' },                  
+                  { x: stockChartXValues, y: volume, name: 'Volume', type: 'bar', marker: {color: 'purple'}, yaxis: 'y1' }
+
                 ]}
-                layout={{ title: selectedTicker, height: 400 }}
+                layout={{ 
+                  yaxis: {domain: [0, 0.5]},
+                  yaxis2: {domain: [0.5, 1]},
+
+                  title: selectedTicker, 
+                  height: 600, 
+                  xaxis: { 
+                    rangeselector: {buttons: [{count: 1, label: '1m', step: 'month'}, {count: 6, label: '6m', step: 'month'}]}, 
+                    rangeslider: {range:[stockChartXValues[stockChartXValues.length-1], stockChartXValues[0]]}, 
+                    range:[stockChartXValues[stockChartXValues.length-1], stockChartXValues[0]], 
+                    type: 'date'
+                  },
+                  }}
                 useResizeHandler
                 style={{ width: '90%' }}
-                config={{ scrollZoom: true }}
               />}
 
               {toggleGraph && <div>
