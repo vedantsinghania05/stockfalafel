@@ -285,10 +285,10 @@ class Home extends Component {
               {!toggleGraph && <Plot
                 data={[
                   { x: stockChartXValues, y: stockChartYValues, name: 'Close', type: 'scatter', marker: {size: 4}, mode: 'lines+markers', yaxis: 'y2' },
-                  { x: stockChartXValues, y: high, name: 'High', type: 'scatter', marker: {size: 4}, mode: 'lines+markers', yaxis: 'y2' },
-                  { x: stockChartXValues, y: low, name: 'Low', type: 'scatter', marker: {size: 4}, mode: 'lines+markers', yaxis: 'y2' },
                   { x: stockAvgXValues, y: recentMovingAvgs, name: '50 Day MA', type: 'scatter', yaxis: 'y2' },
-                  { x: stockAvgXValues, y: olderMovingAvgs, name: '200 Day MA', type: 'scatter', yaxis: 'y2' },                  
+                  { x: stockAvgXValues, y: olderMovingAvgs, name: '200 Day MA', type: 'scatter', yaxis: 'y2' },    
+                  { x: stockChartXValues, y: high, name: 'High', type: 'scatter', marker: {size: 4}, mode: 'lines+markers', yaxis: 'y2' },
+                  { x: stockChartXValues, y: low, name: 'Low', type: 'scatter', marker: {size: 4}, mode: 'lines+markers', yaxis: 'y2' },             
                   { x: stockChartXValues, y: volume, name: 'Volume', type: 'bar', marker: {color: 'purple'}, yaxis: 'y1' }
 
                 ]}
@@ -299,7 +299,7 @@ class Home extends Component {
                   title: selectedTicker, 
                   height: 600, 
                   xaxis: { 
-                    rangeselector: {buttons: [{count: 1, label: '1m', step: 'month'}, {count: 6, label: '6m', step: 'month'}]}, 
+                    rangeselector: {buttons: [{count: 1, label: '1m', step: 'month'}, {count: 6, label: '6m', step: 'month'}, {count: 1, label: '1y', step: 'year'}, {count: 5, label: '5y', step: 'year'}]}, 
                     rangeslider: {range:[stockChartXValues[stockChartXValues.length-1], stockChartXValues[0]]}, 
                     range:[stockChartXValues[stockChartXValues.length-1], stockChartXValues[0]], 
                     type: 'date'
@@ -345,8 +345,8 @@ class Home extends Component {
                     <td>{stockChartYValues[i]}</td>
                   </tr>)}
                 </tbody>
-              </table>}
-            </div>}
+              </table>} 
+              </div>}
 
           </CardBody>
         </Card>
