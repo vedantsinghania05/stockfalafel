@@ -8,7 +8,7 @@ import { updateUser, getStoredStockData, getUser, getUsersCompanies, getCompanyB
 class Home extends Component {
   constructor() {
     super();
-    this.state = { result: '', userCompanyList: [], showGraph: false, selectedTicker: undefined, stockChartXValues: [], stockChartYValues: [], 
+    this.state = { result: '', userCompanyList: [], showGraph: false, selectedTicker: undefined, stockChartXValues: [], stockChartYClose: [], stockChartYOpen: [], stockChartYHigh: [], stockChartYLow: [], 
     companiesStr: '', loading: false, percentChange: [], numericChange: [], recentMovingAvgs: [], olderMovingAvgs: [], stockAvgXValues: [], 
     toggleGraph: false, showDataTable: false, comparisonCompany: '', comparisonXVals: [], comparisonYVals: [], comparisonLabel: '', volume: [], 
     high: [], low: [] }
@@ -149,7 +149,7 @@ class Home extends Component {
   removeResult = () => this.setState({result: ''})
 
   fn = (stockData) => {
-    let { stockAvgXValues, stockChartXValues, stockChartYValues, volume, high, low, numericChange, percentChange } = this.state
+    let { stockAvgXValues, stockChartXValues, stockChartYClose, stockChartYHigh, stockChartYOpen, stockChartYLow, volume, high, low, numericChange, percentChange } = this.state
     let tempRecentMovingAvgs = []
     let tempOlderMovingAvgs = []
     let sortedStockData = [...stockData]    
@@ -193,7 +193,10 @@ class Home extends Component {
       let b = +i+1
       stockAvgXValues.push(sortedStockData[i].date)
       stockChartXValues.push(stockData[i].date)
-      stockChartYValues.push(stockData[i].close.toFixed(2))
+      stockChartYClose.push(stockData[i].close.toFixed(2))
+      stockChartYOpen.push(stockData[i].open.toFixed(2))
+      stockChartYHigh.push(stockData[i].high.toFixed(2))
+      stockChartYLow.push(stockData[i].low.toFixed(2))
       volume.push(stockData[i].volume)
       high.push(stockData[i].high)
       low.push(stockData[i].low)
@@ -248,9 +251,10 @@ class Home extends Component {
 
 
   render() {
-    let { result, comparisonCompany, userCompanyList, showGraph, selectedTicker, stockChartXValues, stockChartYValues, recentMovingAvgs, olderMovingAvgs, 
+    let { result, comparisonCompany, userCompanyList, showGraph, selectedTicker, stockChartXValues, stockChartYClose, stockChartYOpen, stockChartYLow, stockChartYHigh, recentMovingAvgs, olderMovingAvgs, 
     companiesStr, loading, percentChange, numericChange, stockAvgXValues, toggleGraph, showDataTable, comparisonXVals, comparisonYVals, comparisonLabel, 
-    volume, high, low } = this.state
+    volume } = this.state
+
     return (
       <Container className='dashboard'>
         <Card>
@@ -284,11 +288,10 @@ class Home extends Component {
 
               {!toggleGraph && <Plot
                 data={[
-                  { x: stockChartXValues, y: stockChartYValues, name: 'Close', type: 'scatter', marker: {size: 4}, mode: 'lines+markers', yaxis: 'y2' },
-                  { x: stockAvgXValues, y: recentMovingAvgs, name: '50 Day MA', type: 'scatter', yaxis: 'y2' },
-                  { x: stockAvgXValues, y: olderMovingAvgs, name: '200 Day MA', type: 'scatter', yaxis: 'y2' },    
-                  { x: stockChartXValues, y: high, name: 'High', type: 'scatter', marker: {size: 4}, mode: 'lines+markers', yaxis: 'y2' },
-                  { x: stockChartXValues, y: low, name: 'Low', type: 'scatter', marker: {size: 4}, mode: 'lines+markers', yaxis: 'y2' },             
+
+                  { name: 'OHLC', x: stockChartXValues, type: 'ohlc', close: stockChartYClose, open: stockChartYOpen, high: stockChartYHigh, low: stockChartYLow, marker: {size: 4}, mode: 'lines+markers', yaxis: 'y2' },
+                  { x: stockAvgXValues, y: recentMovingAvgs, name: '50 Day MA', type: 'scatter', yaxis: 'y2', marker: {color: 'orange'} },
+                  { x: stockAvgXValues, y: olderMovingAvgs, name: '200 Day MA', type: 'scatter', yaxis: 'y2', marker: {color: 'blue'} },           
                   { x: stockChartXValues, y: volume, name: 'Volume', type: 'bar', marker: {color: 'purple'}, yaxis: 'y1' }
 
                 ]}
@@ -299,9 +302,10 @@ class Home extends Component {
                   title: selectedTicker, 
                   height: 600, 
                   xaxis: { 
-                    rangeselector: {buttons: [{count: 1, label: '1m', step: 'month'}, {count: 6, label: '6m', step: 'month'}, {count: 1, label: '1y', step: 'year'}, {count: 5, label: '5y', step: 'year'}]}, 
+                    autorange: false,
+                    rangeselector: {buttons: [{count: 1, label: '1d', step: 'day'}, {count: 7, label: '1w', step: 'day'}, {count: 1, label: '1m', step: 'month'}, {count: 6, label: '6m', step: 'month'}, {count: 1, label: '1y', step: 'year'}, {count: 5, label: '5y', step: 'year'}]}, 
                     rangeslider: {range:[stockChartXValues[stockChartXValues.length-1], stockChartXValues[0]]}, 
-                    range:[stockChartXValues[stockChartXValues.length-1], stockChartXValues[0]], 
+                    range: [stockChartXValues[5], stockChartXValues[0]], 
                     type: 'date'
                   },
                   }}
@@ -316,7 +320,7 @@ class Home extends Component {
 
                 <Plot 
                   data={[
-                    { x: stockChartXValues, y: stockChartYValues, name: selectedTicker, type: 'scatter', marker: {color: 'red'}, mode: 'lines+markers' },
+                    { x: stockChartXValues, y: stockChartYClose, name: selectedTicker, type: 'scatter', marker: {color: 'red'}, mode: 'lines+markers' },
                     { x: comparisonXVals, y: comparisonYVals, name: comparisonLabel, type: 'scatter', marker: {color: 'blue'}, mode: 'lines+markers' }
                   ]}
                   layout={{ title: 'Company Comparison', height: 400 }}
@@ -342,7 +346,7 @@ class Home extends Component {
                     <td>{u.split('T')[0]}</td>
                     <td>{percentChange[i]}</td>
                     <td>{numericChange[i]}</td>
-                    <td>{stockChartYValues[i]}</td>
+                    <td>{stockChartYClose[i]}</td>
                   </tr>)}
                 </tbody>
               </table>} 
@@ -355,3 +359,5 @@ class Home extends Component {
   }
 }
 export default connect(signedInUserMstp, signedInUserMdtp)(Home);
+
+//[stockChartXValues[stockChartXValues.length-1]
