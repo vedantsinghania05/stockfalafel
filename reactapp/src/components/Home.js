@@ -305,9 +305,8 @@ class Home extends Component {
                     autorange: false,
                     rangeselector: {buttons: [{count: 1, label: '1d', step: 'day'}, {count: 7, label: '1w', step: 'day'}, {count: 1, label: '1m', step: 'month'}, {count: 6, label: '6m', step: 'month'}, {count: 1, label: '1y', step: 'year'}, {count: 5, label: '5y', step: 'year'}]}, 
                     rangeslider: {range:[stockChartXValues[stockChartXValues.length-1], stockChartXValues[0]]}, 
-                    range: [stockChartXValues[5], stockChartXValues[0]], 
-                    type: 'date'
-                  },
+                    range: [stockChartXValues[100], stockChartXValues[0]], 
+                  }
                   }}
                 useResizeHandler
                 style={{ width: '90%' }}
