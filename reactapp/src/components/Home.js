@@ -10,8 +10,7 @@ class Home extends Component {
     super();
     this.state = { result: '', userCompanyList: [], showGraph: false, selectedTicker: undefined, stockChartXValues: [], stockChartYClose: [], stockChartYOpen: [], stockChartYHigh: [], stockChartYLow: [], 
     companiesStr: '', loading: false, percentChange: [], numericChange: [], recentMovingAvgs: [], olderMovingAvgs: [], stockAvgXValues: [], 
-    toggleGraph: false, showDataTable: false, comparisonCompany: '', comparisonXVals: [], comparisonYVals: [], comparisonLabel: '', volume: [], 
-    high: [], low: [] }
+    toggleGraph: false, showDataTable: false, comparisonCompany: '', comparisonXVals: [], comparisonYVals: [], comparisonLabel: '', volume: [] }
   }
 
   componentDidMount = () => {
@@ -144,12 +143,15 @@ class Home extends Component {
 
   }
 
-  back = () => this.setState({ showGraph: false, stockChartXValues: [], stockChartYValues: [], loading: false, showDataTable: false, toggleGraph: false, stockAvgXValues: [], volume: [], high: [], low: [], close: [], percentChange: [], numericChange: []})
+  back = () => { 
+    this.setState({ showGraph: false, stockChartXValues: [], stockChartYValues: [], loading: false, showDataTable: false, toggleGraph: false, 
+    stockAvgXValues: [], volume: [], percentChange: [], numericChange: [], stockChartYClose: [], stockChartYOpen: [], stockChartYHigh: [], stockChartYLow: []}) 
+  }
 
   removeResult = () => this.setState({result: ''})
 
   fn = (stockData) => {
-    let { stockAvgXValues, stockChartXValues, stockChartYClose, stockChartYHigh, stockChartYOpen, stockChartYLow, volume, high, low, numericChange, percentChange } = this.state
+    let { stockAvgXValues, stockChartXValues, stockChartYClose, stockChartYHigh, stockChartYOpen, stockChartYLow, volume, numericChange, percentChange } = this.state
     let tempRecentMovingAvgs = []
     let tempOlderMovingAvgs = []
     let sortedStockData = [...stockData]    
@@ -198,8 +200,6 @@ class Home extends Component {
       stockChartYHigh.push(stockData[i].high.toFixed(2))
       stockChartYLow.push(stockData[i].low.toFixed(2))
       volume.push(stockData[i].volume)
-      high.push(stockData[i].high)
-      low.push(stockData[i].low)
       if (stockData[i].close > stockData[b].close)  {
         numericChange.push((stockData[i].close - stockData[b].close).toFixed(2))
         percentChange.push((((stockData[i].close - stockData[b].close)/stockData[i].close)*100).toFixed(3)+'%')
@@ -296,16 +296,15 @@ class Home extends Component {
 
                 ]}
                 layout={{ 
-                  yaxis: {domain: [0, 0.5]},
-                  yaxis2: {domain: [0.5, 1]},
+                  yaxis: {domain: [0, 0.3]},
+                  yaxis2: {domain: [0.25, 1]},
 
                   title: selectedTicker, 
-                  height: 600, 
+                  height: 650, 
                   xaxis: { 
-                    autorange: false,
-                    rangeselector: {buttons: [{count: 1, label: '1d', step: 'day'}, {count: 7, label: '1w', step: 'day'}, {count: 1, label: '1m', step: 'month'}, {count: 6, label: '6m', step: 'month'}, {count: 1, label: '1y', step: 'year'}, {count: 5, label: '5y', step: 'year'}]}, 
-                    rangeslider: {range:[stockChartXValues[stockChartXValues.length-1], stockChartXValues[0]]}, 
-                    range: [stockChartXValues[100], stockChartXValues[0]], 
+                    rangeselector: {buttons: [{count: 1, label: '1d', step: 'day'}, {count: 7, label: '1w', step: 'day'}, {count: 1, label: '1m', step: 'month'}, {count: 6, label: '6m', step: 'month'}, {count: 1, label: '1y', step: 'year'}, {count: 5, label: '5y', step: 'year'}, {step: 'all'}]},
+                    range: [stockChartXValues[99], stockChartXValues[0]],
+                    rangeslider: true
                   }
                   }}
                 useResizeHandler
@@ -322,7 +321,7 @@ class Home extends Component {
                     { x: stockChartXValues, y: stockChartYClose, name: selectedTicker, type: 'scatter', marker: {color: 'red'}, mode: 'lines+markers' },
                     { x: comparisonXVals, y: comparisonYVals, name: comparisonLabel, type: 'scatter', marker: {color: 'blue'}, mode: 'lines+markers' }
                   ]}
-                  layout={{ title: 'Company Comparison', height: 400 }}
+                  layout={{ title: 'Company Comparison', height: 500 }}
                   useResizeHandler
                   style={{ width: '90%' }}
                   config={{ scrollZoom: true }}
