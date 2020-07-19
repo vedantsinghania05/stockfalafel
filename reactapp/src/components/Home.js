@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Container, Card, CardBody, Button, Input, Form, Spinner, Alert } from 'reactstrap'
+import { Container, Card, CardBody, Button, Input, Form, Spinner, Alert, Row, Col } from 'reactstrap'
 import Plot from 'react-plotly.js';
 import { signedInUserMstp, signedInUserMdtp, getUserToken } from '../redux/containers/SignedInUserCtr';
 import { connect } from 'react-redux';
@@ -10,7 +10,7 @@ class Home extends Component {
     super();
     this.state = { result: '', userCompanyList: [], showGraph: false, selectedTicker: undefined, stockChartXValues: [], stockChartYClose: [], stockChartYOpen: [], stockChartYHigh: [], stockChartYLow: [], 
     companiesStr: '', loading: false, percentChange: [], numericChange: [], recentMovingAvgs: [], olderMovingAvgs: [], stockAvgXValues: [], 
-    toggleGraph: false, showDataTable: false, comparisonCompany: '', comparisonXVals: [], comparisonYVals: [], comparisonLabel: '', volume: [] }
+    toggleGraph: false, showDataTable: false, comparisonCompany: '', comparisonXVals: [], comparisonYVals: [], comparisonLabel: '', volume: [], ticker: '', amount: '', date: '', purchasedStocks: [] }
   }
 
   componentDidMount = () => {
@@ -40,6 +40,13 @@ class Home extends Component {
   onChangeCompaniesStr = (e) => this.setState({ companiesStr: e.target.value.toUpperCase() })
 
   onChangeComparison = (e) => this.setState({ comparisonCompany: e.target.value.toUpperCase() })
+
+  onChangeTicker = (e) => this.setState({ticker: e.target.value.toUpperCase()})
+
+  onChangeAmount = (e) => this.setState({amount: e.target.value})
+
+  onChangeDate = (e) => this.setState({date: e.target.value})
+
 
   chooseCompanies = (e) => {
     let { companiesStr } = this.state
@@ -249,11 +256,23 @@ class Home extends Component {
     )
   }
 
+  submitPurchasedStocks = () => {
+    let {ticker, amount, date, purchasedStocks} = this.state
+    purchasedStocks.push({ticker: ticker, amount: amount, date: date})
+    this.setState({purchasedStocks: purchasedStocks})
+  }
+
+  soldStock = (i) => {
+    let {purchasedStocks} = this.state
+    purchasedStocks.splice(i, 1)
+    this.setState({purchasedStocks: purchasedStocks})
+  }
+
 
   render() {
     let { result, comparisonCompany, userCompanyList, showGraph, selectedTicker, stockChartXValues, stockChartYClose, stockChartYOpen, stockChartYLow, stockChartYHigh, recentMovingAvgs, olderMovingAvgs, 
     companiesStr, loading, percentChange, numericChange, stockAvgXValues, toggleGraph, showDataTable, comparisonXVals, comparisonYVals, comparisonLabel, 
-    volume } = this.state
+    volume, ticker, amount, date, purchasedStocks } = this.state
 
     return (
       <Container className='dashboard'>
@@ -284,25 +303,30 @@ class Home extends Component {
 
               <br/>
 
-              <Form>
-                {/* use this form to add purchased stocks*/}
-              </Form>
+                <Row md={6}>
+                  <Col><Input type='string' placeholder='ticker' bsSize='sm' value={ticker} onChange={this.onChangeTicker}/></Col>
+                  <Col><Input type='number' placeholder='amount' bsSize='sm' value={amount} onChange={this.onChangeAmount}/></Col>
+                  <Col><Input type='date' placeholder='price' bsSize='sm' value={date} onChange={this.onChangeDate}/></Col>
+                </Row>
+                <Button size='sm' color='primary' onClick={this.submitPurchasedStocks}>Submit</Button>
               
               <table>
                 <thead>
-                  <th>Ticker</th>
-                  <th>Amount</th>
-                  <th>Price</th>
-                  <th>Profit If Sold</th>
+                  <tr>
+                    <th>Ticker</th>
+                    <th>Amount</th>
+                    <th>Price</th>
+                    <th>Profit If Sold</th>
+                  </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td>FB</td>
-                    <td>5</td>
-                    <td>$200.00</td>
+                  {purchasedStocks && purchasedStocks.map((u, i) => <tr key={i}>
+                    <td>{u.ticker}</td>
+                    <td>{u.amount}</td>
+                    <td>{u.date}</td>
                     <td>$100</td>
-                    <td><Button size='sm' color='primary'>X</Button></td>
-                  </tr>
+                    <th><Button size='sm' color='primary' onClick={() => this.soldStock(i)}>x</Button></th>
+                  </tr>)}
                 </tbody>
               </table>
             </div>}
