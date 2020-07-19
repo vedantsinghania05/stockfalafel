@@ -281,6 +281,30 @@ class Home extends Component {
                   </tr>)}
                 </tbody>
               </table>
+
+              <br/>
+
+              <Form>
+                {/* use this form to add purchased stocks*/}
+              </Form>
+              
+              <table>
+                <thead>
+                  <th>Ticker</th>
+                  <th>Amount</th>
+                  <th>Price</th>
+                  <th>Profit If Sold</th>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>FB</td>
+                    <td>5</td>
+                    <td>$200.00</td>
+                    <td>$100</td>
+                    <td><Button size='sm' color='primary'>X</Button></td>
+                  </tr>
+                </tbody>
+              </table>
             </div>}
 
             {showGraph && <div>
