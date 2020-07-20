@@ -7,6 +7,9 @@ const shareSchema = new Schema({
   amount: {
     type: Number
   },
+  price: {
+    type: String
+  },
   date: {
     type: Date
   },
@@ -26,7 +29,9 @@ shareSchema.methods = {
     view.user = this.user;
     view.ticker = this.ticker;
     view.amount = this.amount
+    view.price = this.price
     view.date = this.date
+    view.id = this.id
  
     if (full) {
       view.createdAt = this.createdAt;

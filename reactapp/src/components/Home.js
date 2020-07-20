@@ -3,7 +3,7 @@ import { Container, Card, CardBody, Button, Input, Form, Spinner, Alert, Row, Co
 import Plot from 'react-plotly.js';
 import { signedInUserMstp, signedInUserMdtp, getUserToken } from '../redux/containers/SignedInUserCtr';
 import { connect } from 'react-redux';
-import { updateUser, getStoredStockData, getUser, getUsersCompanies, getCompanyByTicker } from '../nodeserverapi'
+import { updateUser, getStoredStockData, getUser, getUsersCompanies, getCompanyByTicker, createShare, getShares, removeShares } from '../nodeserverapi'
 
 class Home extends Component {
   constructor() {
@@ -14,7 +14,7 @@ class Home extends Component {
   }
 
   componentDidMount = () => {
-
+    this.getShare()
     getUser('me', getUserToken(),
       response => {
         let companyIds = []
@@ -257,15 +257,44 @@ class Home extends Component {
   }
 
   submitPurchasedStocks = () => {
-    let {ticker, amount, date, purchasedStocks} = this.state
-    purchasedStocks.push({ticker: ticker, amount: amount, date: date})
-    this.setState({purchasedStocks: purchasedStocks})
+    let { ticker, amount, date, purchasedStocks } = this.state
+    createShare(ticker, amount, date, this.props.userInfo.id,
+      response => {
+        purchasedStocks.push(response.data)
+        this.setState({purchasedStocks: purchasedStocks, ticker: '', amount: '', date: ''})
+        
+      },
+      error => {
+        this.setState({result: error.message})
+      }
+    )
   }
 
-  soldStock = (i) => {
+  getShare = () => {
+    let { purchasedStocks } = this.state
+    getShares(getUserToken(), 
+      response => {
+        for (let i of response.data) purchasedStocks.push(i)
+        this.setState({purchasedStocks: purchasedStocks})
+      },
+      error => {
+        this.setState({result: error.message})
+      }
+    )
+  }
+
+  soldStock = (u,i) => {
     let {purchasedStocks} = this.state
-    purchasedStocks.splice(i, 1)
-    this.setState({purchasedStocks: purchasedStocks})
+    removeShares(u._id, getUserToken(),
+      response => {
+        purchasedStocks.splice(i, 1)
+        this.setState({purchasedStocks: purchasedStocks})
+
+      },
+      error => {
+        this.setState({result: error.message})
+      }
+    )
   }
 
 
@@ -315,6 +344,7 @@ class Home extends Component {
                   <tr>
                     <th>Ticker</th>
                     <th>Amount</th>
+                    <th>Date</th>
                     <th>Price</th>
                     <th>Profit If Sold</th>
                   </tr>
@@ -323,9 +353,10 @@ class Home extends Component {
                   {purchasedStocks && purchasedStocks.map((u, i) => <tr key={i}>
                     <td>{u.ticker}</td>
                     <td>{u.amount}</td>
-                    <td>{u.date}</td>
+                    <td>{u.date.split('T')[0]}</td>
+                    <td>{'$' + u.price}</td>
                     <td>$100</td>
-                    <th><Button size='sm' color='primary' onClick={() => this.soldStock(i)}>x</Button></th>
+                    <th><Button size='sm' color='primary' onClick={() => this.soldStock(u,i)}>x</Button></th>
                   </tr>)}
                 </tbody>
               </table>
