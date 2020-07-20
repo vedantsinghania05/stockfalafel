@@ -145,13 +145,12 @@ export const deleteCompany = (id, token, successCbk, errorCbk) => {
  * Share
  */
 
-export const createShare = (ticker, amount, date, user, successCbk, errorCbk) => {
+export const createShare = (ticker, amount, user, successCbk, errorCbk) => {
   axiosInstance.post(nodeserverUrl + '/shares/',
     {
       access_token: masterKey,
       ticker: ticker,
       amount: amount,
-      date: date,
       user: user
     }
   )

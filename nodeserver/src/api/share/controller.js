@@ -4,18 +4,17 @@ import { Company } from '../company'
 import { Stock } from '../stock'
 
 export const create = ({ body }, res, next) => {
-  let fields = {ticker: body.ticker, amount: body.amount, date: body.date, user: body.user, price: ''}
-  let companyId = ''
+  let fields = {ticker: body.ticker, amount: body.amount, user: body.user, price: '', date: ''}
 
   Company.findOne({ ticker: body.ticker })
   .then(company => {
     if (!company) return next(resInternal('Failed to find company'))
-    companyId = company.id
-    return Stock.findOne({company: companyId, date: new Date(body.date)})
+    return Stock.find({company: company.id})
   })
-  .then(stock => {
-    if (!stock) return next(resInternal('Failed to find stock'))
-    fields.price = stock.open
+  .then(stocks => {
+    if (!stocks) return next(resInternal('Failed to find stock'))
+    fields.date = stocks[0].date
+    fields.price = stocks[0].open
     return Share.create(fields)
   })
   .then(share => {

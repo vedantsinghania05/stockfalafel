@@ -10,7 +10,7 @@ class Home extends Component {
     super();
     this.state = { result: '', userCompanyList: [], showGraph: false, selectedTicker: undefined, stockChartXValues: [], stockChartYClose: [], stockChartYOpen: [], stockChartYHigh: [], stockChartYLow: [], 
     companiesStr: '', loading: false, percentChange: [], numericChange: [], recentMovingAvgs: [], olderMovingAvgs: [], stockAvgXValues: [], 
-    toggleGraph: false, showDataTable: false, comparisonCompany: '', comparisonXVals: [], comparisonYVals: [], comparisonLabel: '', volume: [], ticker: '', amount: '', date: '', purchasedStocks: [] }
+    toggleGraph: false, showDataTable: false, comparisonCompany: '', comparisonXVals: [], comparisonYVals: [], comparisonLabel: '', volume: [], ticker: '', amount: '', purchasedStocks: [] }
   }
 
   componentDidMount = () => {
@@ -44,8 +44,6 @@ class Home extends Component {
   onChangeTicker = (e) => this.setState({ticker: e.target.value.toUpperCase()})
 
   onChangeAmount = (e) => this.setState({amount: e.target.value})
-
-  onChangeDate = (e) => this.setState({date: e.target.value})
 
 
   chooseCompanies = (e) => {
@@ -257,11 +255,11 @@ class Home extends Component {
   }
 
   submitPurchasedStocks = () => {
-    let { ticker, amount, date, purchasedStocks } = this.state
-    createShare(ticker, amount, date, this.props.userInfo.id,
+    let { ticker, amount, purchasedStocks } = this.state
+    createShare(ticker, amount, this.props.userInfo.id,
       response => {
         purchasedStocks.push(response.data)
-        this.setState({purchasedStocks: purchasedStocks, ticker: '', amount: '', date: ''})
+        this.setState({purchasedStocks: purchasedStocks, ticker: '', amount: ''})
         
       },
       error => {
@@ -301,7 +299,7 @@ class Home extends Component {
   render() {
     let { result, comparisonCompany, userCompanyList, showGraph, selectedTicker, stockChartXValues, stockChartYClose, stockChartYOpen, stockChartYLow, stockChartYHigh, recentMovingAvgs, olderMovingAvgs, 
     companiesStr, loading, percentChange, numericChange, stockAvgXValues, toggleGraph, showDataTable, comparisonXVals, comparisonYVals, comparisonLabel, 
-    volume, ticker, amount, date, purchasedStocks } = this.state
+    volume, ticker, amount, purchasedStocks } = this.state
 
     return (
       <Container className='dashboard'>
@@ -335,7 +333,6 @@ class Home extends Component {
                 <Row md={6}>
                   <Col><Input type='string' placeholder='ticker' bsSize='sm' value={ticker} onChange={this.onChangeTicker}/></Col>
                   <Col><Input type='number' placeholder='amount' bsSize='sm' value={amount} onChange={this.onChangeAmount}/></Col>
-                  <Col><Input type='date' placeholder='price' bsSize='sm' value={date} onChange={this.onChangeDate}/></Col>
                 </Row>
                 <Button size='sm' color='primary' onClick={this.submitPurchasedStocks}>Submit</Button>
               
