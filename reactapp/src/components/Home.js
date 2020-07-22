@@ -272,6 +272,7 @@ class Home extends Component {
     let { purchasedStocks } = this.state
     getShares(getUserToken(), 
       response => {
+        console.log(response.data)
         for (let i of response.data) purchasedStocks.push(i)
         this.setState({purchasedStocks: purchasedStocks})
       },
@@ -334,7 +335,7 @@ class Home extends Component {
                   <Col><Input type='string' placeholder='ticker' bsSize='sm' value={ticker} onChange={this.onChangeTicker}/></Col>
                   <Col><Input type='number' placeholder='amount' bsSize='sm' value={amount} onChange={this.onChangeAmount}/></Col>
                 </Row>
-                <Button size='sm' color='primary' onClick={this.submitPurchasedStocks}>Submit</Button>
+                <Button size='sm' color='primary' onClick={this.submitPurchasedStocks}>Buy</Button>
               
               <table>
                 <thead>
