@@ -272,6 +272,7 @@ class Home extends Component {
     let { purchasedStocks } = this.state
     getShares(getUserToken(), 
       response => {
+        console.log(response.data)
         for (let i of response.data) purchasedStocks.push(i)
         this.setState({purchasedStocks: purchasedStocks})
       },
