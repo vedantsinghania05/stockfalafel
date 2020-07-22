@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Container, Card, CardBody, Button, Input, Form, Spinner, Alert, Row, Col } from 'reactstrap'
+import { Container, Card, CardBody, Button, Input, Form, Spinner, Alert, Row, Col, Table } from 'reactstrap'
 import Plot from 'react-plotly.js';
 import { signedInUserMstp, signedInUserMdtp, getUserToken } from '../redux/containers/SignedInUserCtr';
 import { connect } from 'react-redux';
@@ -315,28 +315,28 @@ class Home extends Component {
 
             {!showGraph && <div>
               <Form onSubmit={this.chooseCompanies}>
-                <Input bsSize='sm' name='companiesStr' placeholder='Enter Companies Here' value={companiesStr} onChange={this.onChangeCompaniesStr}/>
+                <Input bsSize='sm' name='companiesStr' placeholder='Enter Company Here' value={companiesStr} onChange={this.onChangeCompaniesStr}/>
               </Form>
 
-              <table>
+              {userCompanyList && <Table borderless size='sm'>
                 <tbody>
-                  {userCompanyList && userCompanyList.map((company, i) => <tr key={i}>
+                  {userCompanyList.map((company, i) => <tr key={i}>
                     <td>{company.ticker}</td>
-                    <td><Button size='sm' color='primary' disabled={loading} onClick={() => this.sendtoGraph(company)}>{"->"}</Button></td>
-                    <td><Button size='sm' color='primary' disabled={loading} onClick={() => this.deleteCompany(company)}>x</Button></td>
+                    <td><Button size='sm' color='primary' disabled={loading} onClick={() => this.sendtoGraph(company)}>{"->"}</Button><Button size='sm' color='primary' disabled={loading} onClick={() => this.deleteCompany(company)}>x</Button></td>
+                    <td></td>
                   </tr>)}
                 </tbody>
-              </table>
+              </Table>}
 
               <br/>
 
-                <Row md={6}>
-                  <Col><Input type='string' placeholder='ticker' bsSize='sm' value={ticker} onChange={this.onChangeTicker}/></Col>
-                  <Col><Input type='number' placeholder='amount' bsSize='sm' value={amount} onChange={this.onChangeAmount}/></Col>
-                </Row>
-                <Button size='sm' color='primary' onClick={this.submitPurchasedStocks}>Submit</Button>
+              <Row md='auto'>
+                <Col><Input type='string' placeholder='Ticker' bsSize='sm' value={ticker} onChange={this.onChangeTicker}/></Col>
+                <Col><Input type='number' placeholder='Amount' bsSize='sm' value={amount} onChange={this.onChangeAmount}/></Col>
+              </Row>
+              <Button size='sm' color='primary' onClick={this.submitPurchasedStocks}>Submit</Button>
               
-              <table>
+              {purchasedStocks.length >= 1 && <Table borderless size='sm'>
                 <thead>
                   <tr>
                     <th>Ticker</th>
@@ -347,7 +347,7 @@ class Home extends Component {
                   </tr>
                 </thead>
                 <tbody>
-                  {purchasedStocks && purchasedStocks.map((u, i) => <tr key={i}>
+                  {purchasedStocks.map((u, i) => <tr key={i}>
                     <td>{u.ticker}</td>
                     <td>{u.amount}</td>
                     <td>{u.date.split('T')[0]}</td>
@@ -356,7 +356,7 @@ class Home extends Component {
                     <th><Button size='sm' color='primary' onClick={() => this.soldStock(u,i)}>x</Button></th>
                   </tr>)}
                 </tbody>
-              </table>
+              </Table>}
             </div>}
 
             {showGraph && <div>
@@ -406,7 +406,7 @@ class Home extends Component {
 
               {!toggleGraph && <Button size='sm' color='primary' onClick={this.tableToggle}>{showDataTable ? 'Hide Table':'Show Table'}</Button>}
 
-              {showDataTable && <table>
+              {showDataTable && <Table borderless size='sm'>
                 <thead>
                   <tr>
                     <th>Date</th>
@@ -423,7 +423,7 @@ class Home extends Component {
                     <td>{stockChartYClose[i]}</td>
                   </tr>)}
                 </tbody>
-              </table>} 
+              </Table>} 
               </div>}
 
           </CardBody>
@@ -433,5 +433,3 @@ class Home extends Component {
   }
 }
 export default connect(signedInUserMstp, signedInUserMdtp)(Home);
-
-//[stockChartXValues[stockChartXValues.length-1]
