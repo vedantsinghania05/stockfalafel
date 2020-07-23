@@ -43,6 +43,7 @@ export const getShareByUserId = async ({ user }, res , next) => {
       let offset = today.getTimezoneOffset()
       console.log("<><><>iffset", offset)
       let d = new Date(today.setDate(today.getDate() - 1))
+      d = d.setMinutes(d.getMinutes() - offset)
       let companyIds = []
       for (let company of companies) console.log('>>>>> type: ', typeof company._id)
       for (let company of companies) companyIds.push(company._id)
