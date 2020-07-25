@@ -5,15 +5,20 @@ import { Stock } from '../stock'
 import mongoose from 'mongoose'
 
 export const create = ({ body }, res, next) => {
-  let fields = {ticker: body.ticker, amount: body.amount, user: body.user, price: '', date: ''}
+  let fields = {amount: body.amount, user: body.user, price: '', date: ''}
+
+  console.log('ticker', body.ticker)
 
   Company.findOne({ ticker: body.ticker })
   .then(company => {
     if (!company) return next(resInternal('Failed to find company'))
+    fields.company = company.id
+    console.log('>>>>>> fields.company', fields.company)
     return Stock.find({company: company.id})
   })
   .then(stocks => {
     if (!stocks) return next(resInternal('Failed to find stock'))
+    console.log('>>>>>>>>', stocks[0].date, stocks[0].open)
     fields.date = stocks[0].date
     fields.price = stocks[0].open
     return Share.create(fields)
@@ -30,11 +35,11 @@ export const getShareByUserId = async ({ user }, res , next) => {
   Share.find({user: user.id})
     .then(shares => {
       console.log('>>>>> shares', shares)
-      let gShares = shares
-      let shareTickers = []
-      for (let share of shares) shareTickers.push(share.ticker)
-      console.log('>>>>>>> sharetickers', shareTickers)
-      return Company.find({ ticker: {$in: shareTickers} })
+      gShares = shares
+      let shareCompanyIds = []
+      for (let share of shares) shareCompanyIds.push(share.company)
+      console.log('>>>>>>> sharetickers', shareCompanyIds)
+      return Company.find({ _id: {$in: shareCompanyIds} })
     })
     .then(companies => {
       console.log('>>>>>> companies: ', companies)
@@ -53,6 +58,27 @@ export const getShareByUserId = async ({ user }, res , next) => {
     })
     .then(stocks => {
       console.log('>>>>>>>>>> stocks ', stocks)
+      console.log('>>>>>>>>>> gShares: ', gShares)
+
+      let finalSharesList = []
+      for (let i in gShares) {
+        console.log('***', i, gShares[i])
+        let stock = stocks.find(s => s.company.equals(gShares[i].company))
+        if (stock) {
+          const { id, company, amount, price, date, user } = gShares[i]
+
+          console.log('>>>>>>', stock.close, price, amount, date, stock.date)
+
+          let cp = stock.close
+          let pp = cp - price
+          let pa = pp * amount
+
+          finalSharesList.push({ id: id, company: company, amount: amount, price: price, date: date, user, user, cp: cp, pp: pp, pa, pa })
+        } 
+      }
+      console.log('>>>>>>> FINAL: ', finalSharesList)
+      return resOk(res, finalSharesList)
+
     })
     .catch(next)
 }

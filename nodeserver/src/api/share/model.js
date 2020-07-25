@@ -1,8 +1,10 @@
 import mongoose, { Schema } from 'mongoose'
 
 const shareSchema = new Schema({
-  ticker: {
-    type: String
+  company: {
+    type: Schema.ObjectId,
+    ref: 'Company',
+    index: true
   },
   amount: {
     type: Number
@@ -27,7 +29,7 @@ shareSchema.methods = {
   view (full) {
     let view = {}
     view.user = this.user;
-    view.ticker = this.ticker;
+    view.company = this.company;
     view.amount = this.amount
     view.price = this.price
     view.date = this.date

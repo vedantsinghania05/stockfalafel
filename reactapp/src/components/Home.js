@@ -284,7 +284,8 @@ class Home extends Component {
 
   soldStock = (u,i) => {
     let {purchasedStocks} = this.state
-    removeShares(u._id, getUserToken(),
+    console.log('stock to be deleted', u)
+    removeShares(u.id, getUserToken(),
       response => {
         purchasedStocks.splice(i, 1)
         this.setState({purchasedStocks: purchasedStocks})
@@ -342,18 +343,22 @@ class Home extends Component {
                   <tr>
                     <th>Ticker</th>
                     <th>Amount</th>
-                    <th>Date</th>
-                    <th>Price</th>
-                    <th>Profit If Sold</th>
+                    <th>Date of Buy</th>
+                    <th>Price @ Buy</th>
+                    <th>Current Price</th>
+                    <th>Profit Per</th>
+                    <th>Profit For All</th>
                   </tr>
                 </thead>
                 <tbody>
                   {purchasedStocks.map((u, i) => <tr key={i}>
-                    <td>{u.ticker}</td>
+                    <td>{u.company}</td>
                     <td>{u.amount}</td>
                     <td>{u.date.split('T')[0]}</td>
                     <td>{'$' + u.price}</td>
-                    <td>$100</td>
+                    <td>{u.cp}</td>
+                    <td>{u.pp}</td>
+                    <td>{u.pa}</td>
                     <th><Button size='sm' color='primary' onClick={() => this.soldStock(u,i)}>x</Button></th>
                   </tr>)}
                 </tbody>
