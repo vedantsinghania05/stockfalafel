@@ -273,7 +273,6 @@ class Home extends Component {
     let { purchasedStocks } = this.state
     getShares(getUserToken(), 
       response => {
-        console.log(response.data)
         for (let i of response.data) purchasedStocks.push(i)
         this.setState({purchasedStocks: purchasedStocks})
       },
@@ -285,7 +284,6 @@ class Home extends Component {
 
   soldStock = (u,i) => {
     let {purchasedStocks} = this.state
-    console.log('stock to be deleted', u)
     removeShares(u.id, getUserToken(),
       response => {
         purchasedStocks.splice(i, 1)
