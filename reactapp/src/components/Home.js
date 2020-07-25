@@ -363,9 +363,9 @@ class Home extends Component {
                     <td>{u.amount}</td>
                     <td>{u.date.split('T')[0]}</td>
                     <td>{'$' + u.price}</td>
-                    <td>{u.cp}</td>
-                    <td>{u.pp}</td>
-                    <td>{u.pa}</td>
+                    <td>{'$' + u.cp}</td>
+                    <td>{'$' + u.pp}</td>
+                    <td>{'$' + u.pa}</td>
                     <th><Button size='sm' color='primary' onClick={() => this.soldStock(u,i)}>x</Button></th>
                   </tr>)}
                 </tbody>

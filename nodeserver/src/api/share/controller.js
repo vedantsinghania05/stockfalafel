@@ -3,30 +3,42 @@ import { Share } from '.'
 import { Company } from '../company'
 import { Stock } from '../stock'
 
-export const create = ({ body }, res, next) => {
+let today = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate())
+let offset = today.getTimezoneOffset()
+let d = new Date(today.setDate(today.getDate() - 1))
+d = d.setMinutes(d.getMinutes() - offset)
+
+export const create = ({ body, user }, res, next) => {
   let fields = {amount: body.amount, user: body.user, price: '', date: ''}
 
   Company.findOne({ ticker: body.ticker })
   .then(company => {
     if (!company) return next(resInternal('Failed to find company'))
     fields.company = company.id
-    return Stock.find({company: company.id})
+    return Stock.findOne({company: company.id, date: d})
   })
-  .then(stocks => {
-    if (!stocks) return next(resInternal('Failed to find stock'))
-    fields.date = stocks[0].date
-    fields.price = stocks[0].close
+  .then(stock => {
+    if (!stock) return next(resInternal('Failed to find stock'))
+    fields.date = stock.date
+    fields.price = stock.close
     return Share.create(fields)
   })
   .then(share => {
     if (!share) return next(resInternal('Failed to create share'))
-    return resCreated(res, share)
+    fields.id = share.id
+    fields.company = body.ticker
+    fields.user = user
+    fields.cp = share.price
+    fields.pp = 0
+    fields.pa = 0
+    return resCreated(res, fields)
   })
   .catch(next)
 }
 
 export const getShareByUserId = async ({ user }, res , next) => {
   let gShares = undefined
+  let companyTickers = []
   Share.find({user: user.id})
     .then(shares => {
       gShares = shares
@@ -36,12 +48,12 @@ export const getShareByUserId = async ({ user }, res , next) => {
     })
     .then(companies => {
       if (!companies) return next(resInternal('Failed to find companies'))
-      let today = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate())
-      let offset = today.getTimezoneOffset()
-      let d = new Date(today.setDate(today.getDate() - 1))
-      d = d.setMinutes(d.getMinutes() - offset)
+
       let companyIds = []
-      for (let company of companies) companyIds.push(company._id)
+      for (let company of companies) {
+        companyIds.push(company._id) 
+        companyTickers.push(company.ticker)
+      }
       return Stock.find({ company: {$in: companyIds}, date: d })
     })
     .then(stocks => {
@@ -49,13 +61,13 @@ export const getShareByUserId = async ({ user }, res , next) => {
       for (let i in gShares) {
         let stock = stocks.find(s => s.company.equals(gShares[i].company))
         if (stock) {
-          const { id, company, amount, price, date, user } = gShares[i]
+          const { id, amount, price, date, user } = gShares[i]
 
           let cp = stock.close
           let pp = cp - price
           let pa = pp * amount
 
-          finalSharesList.push({ id: id, company: company, amount: amount, price: price, date: date, user: user, cp: cp, pp: pp, pa: pa })
+          finalSharesList.push({ id: id, company: companyTickers[i], amount: amount, price: price, date: date, user: user, cp: cp, pp: pp.toFixed(2), pa: pa.toFixed(2) })
         } 
       }
       return resOk(res, finalSharesList)
