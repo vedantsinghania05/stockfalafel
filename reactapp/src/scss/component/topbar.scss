@@ -126,6 +126,7 @@
   font-weight: 400;
   display: none;
   margin-left: 10px;
+  padding-top: 20px;
 
   @include themify($themes) {
     color: themed('colorText');
@@ -170,8 +171,8 @@
   z-index: 101;
   position: absolute;
   width: 100%;
-  padding: 0 10px;
-  min-width: 220px;
+  // padding: 0 10px;
+  min-width: 175px;
   right: 0;
 }
 

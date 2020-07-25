@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
-import { Container, Card, CardBody, Button, Input, Form, Spinner, Alert, Row, Col, Table } from 'reactstrap'
+import { Container, Card, CardBody, Button, Input, Form, Spinner, Row, Col, Table, Toast, ToastHeader, InputGroup } from 'reactstrap'
 import Plot from 'react-plotly.js';
 import { signedInUserMstp, signedInUserMdtp, getUserToken } from '../redux/containers/SignedInUserCtr';
 import { connect } from 'react-redux';
 import { updateUser, getStoredStockData, getUser, getUsersCompanies, getCompanyByTicker, createShare, getShares, removeShares } from '../nodeserverapi'
+import errorAlert from './errorAlert.png'
 
 class Home extends Component {
   constructor() {
@@ -298,46 +299,54 @@ class Home extends Component {
 
 
   render() {
-    let { result, comparisonCompany, userCompanyList, showGraph, selectedTicker, stockChartXValues, stockChartYClose, stockChartYOpen, stockChartYLow, stockChartYHigh, recentMovingAvgs, olderMovingAvgs, 
-    companiesStr, loading, percentChange, numericChange, stockAvgXValues, toggleGraph, showDataTable, comparisonXVals, comparisonYVals, comparisonLabel, 
-    volume, ticker, amount, purchasedStocks } = this.state
+    let { result, comparisonCompany, userCompanyList, showGraph, selectedTicker, stockChartXValues, stockChartYClose, stockChartYOpen, stockChartYLow, 
+    stockChartYHigh, recentMovingAvgs, olderMovingAvgs, companiesStr, loading, percentChange, numericChange, stockAvgXValues, toggleGraph, showDataTable, 
+    comparisonXVals, comparisonYVals, comparisonLabel, volume, ticker, amount, purchasedStocks } = this.state
 
     return (
       <Container className='dashboard'>
         <Card>
           <CardBody>
-    
             <div className="card__title">
               <h5 className="bold-text">{showGraph ? <Button size='sm' color='primary' onClick={this.back}>{"<-"}</Button> : "Home"}</h5>
             </div>
 
-            {result && <Alert toggle={this.removeResult} color='danger' size='sm' >{result}</Alert>}
+            {result && <Toast>
+              <ToastHeader icon={<img src={errorAlert} alt='error' style={{height: 20, width: 20}}/>} toggle={this.removeResult}>{result}</ToastHeader>
+            </Toast>}
             {loading && <Spinner size='sm' color='primary'></Spinner>}
 
             {!showGraph && <div>
-              <Form onSubmit={this.chooseCompanies}>
-                <Input bsSize='sm' name='companiesStr' placeholder='Enter Company Here' value={companiesStr} onChange={this.onChangeCompaniesStr}/>
-              </Form>
+              <Row>
+                <Col xs={4}>
+                  <Form onSubmit={this.chooseCompanies}>
+                    <Input bsSize='sm' name='companiesStr' placeholder='Enter Company Here' value={companiesStr} onChange={this.onChangeCompaniesStr}/>
+                  </Form>
+                  
+                  {userCompanyList && <Table borderless hover size='sm'>
+                    <tbody>
+                      {userCompanyList.map((company, i) => <tr key={i}>
+                        <td>{company.ticker}</td>
+                        <td>
+                          <Button size='sm' color='primary' disabled={loading} onClick={() => this.sendtoGraph(company)}>{"->"}</Button>
+                          <Button size='sm' color='primary' disabled={loading} onClick={() => this.deleteCompany(company)}>x</Button>
+                        </td>
+                      </tr>)}
+                    </tbody>
+                  </Table>}
 
-              {userCompanyList && <Table borderless size='sm'>
-                <tbody>
-                  {userCompanyList.map((company, i) => <tr key={i}>
-                    <td>{company.ticker}</td>
-                    <td><Button size='sm' color='primary' disabled={loading} onClick={() => this.sendtoGraph(company)}>{"->"}</Button><Button size='sm' color='primary' disabled={loading} onClick={() => this.deleteCompany(company)}>x</Button></td>
-                    <td></td>
-                  </tr>)}
-                </tbody>
-              </Table>}
-
-              <br/>
-
-              <Row md='auto'>
-                <Col><Input type='string' placeholder='Ticker' bsSize='sm' value={ticker} onChange={this.onChangeTicker}/></Col>
-                <Col><Input type='number' placeholder='Amount' bsSize='sm' value={amount} onChange={this.onChangeAmount}/></Col>
+                  <br/>
+                  
+                  <InputGroup>
+                    <Input type='string' placeholder='Ticker' bsSize='sm' value={ticker} onChange={this.onChangeTicker}/>
+                    <Input type='number' placeholder='Amount' bsSize='sm' value={amount} onChange={this.onChangeAmount}/>
+                  </InputGroup>
+                  
+                  <Button size='sm' color='primary' onClick={this.submitPurchasedStocks}>Submit</Button>
+                </Col>
               </Row>
-              <Button size='sm' color='primary' onClick={this.submitPurchasedStocks}>Submit</Button>
               
-              {purchasedStocks.length >= 1 && <Table borderless size='sm'>
+              {purchasedStocks.length >= 1 && <Table borderless hover size='sm'>
                 <thead>
                   <tr>
                     <th>Ticker</th>
@@ -365,17 +374,14 @@ class Home extends Component {
 
               {!toggleGraph && <Plot
                 data={[
-
                   { name: 'OHLC', x: stockChartXValues, type: 'ohlc', close: stockChartYClose, open: stockChartYOpen, high: stockChartYHigh, low: stockChartYLow, marker: {size: 4}, mode: 'lines+markers', yaxis: 'y2' },
                   { x: stockAvgXValues, y: recentMovingAvgs, name: '50 Day MA', type: 'scatter', yaxis: 'y2', marker: {color: 'orange'} },
                   { x: stockAvgXValues, y: olderMovingAvgs, name: '200 Day MA', type: 'scatter', yaxis: 'y2', marker: {color: 'blue'} },           
                   { x: stockChartXValues, y: volume, name: 'Volume', type: 'bar', marker: {color: 'purple'}, yaxis: 'y1' }
-
                 ]}
                 layout={{ 
                   yaxis: {domain: [0, 0.3]},
                   yaxis2: {domain: [0.25, 1]},
-
                   title: selectedTicker, 
                   height: 650, 
                   xaxis: { 
@@ -407,7 +413,7 @@ class Home extends Component {
 
               {!toggleGraph && <Button size='sm' color='primary' onClick={this.tableToggle}>{showDataTable ? 'Hide Table':'Show Table'}</Button>}
 
-              {showDataTable && <Table borderless size='sm'>
+              {showDataTable && <Table borderless hover size='sm'>
                 <thead>
                   <tr>
                     <th>Date</th>
@@ -425,8 +431,7 @@ class Home extends Component {
                   </tr>)}
                 </tbody>
               </Table>} 
-              </div>}
-
+            </div>}
           </CardBody>
         </Card>
       </Container>

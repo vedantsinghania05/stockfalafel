@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
-import { Container, Card, CardBody, Button, Form, Input, Spinner, Alert } from 'reactstrap'
+import { Container, Card, CardBody, Button, Form, Input, Spinner, Toast, ToastHeader, Row, Col, Table } from 'reactstrap'
 import { connect } from 'react-redux';
 import { getStock, createCompany, getAllCompany, deleteCompany } from '../nodeserverapi'
 import { signedInUserMstp, signedInUserMdtp, getUserToken } from '../redux/containers/SignedInUserCtr';
+import errorAlert from './errorAlert.png'
 
 class Admin extends Component {
   constructor() {
@@ -80,28 +81,28 @@ class Admin extends Component {
       <Container className='dashboard'>
         <Card>
           <CardBody>
-
             <div className="card__title">
               <h5 className="bold-text">Admin</h5>
             </div>
 
+            {result && <Toast>
+              <ToastHeader icon={<img src={errorAlert} alt='error' style={{height: 20, width: 20}}/>} toggle={this.removeResult}>{result}</ToastHeader>
+            </Toast>}
             {loading && <Spinner size='sm' color='primary'></Spinner>}
-            {result && <Alert toggle={this.removeResult} color='danger' size='sm' >{result}</Alert>}
 
-            <Form onSubmit={this.createCompanies}>
+            <Row><Col xs={4}><Form onSubmit={this.createCompanies}>
               <Input bsSize='sm' name='companyStr' placeholder='Enter Company Here' value={companyStr} onChange={this.onChangecompanyStr}/>
-            </Form>
+            </Form></Col></Row>
 
-            <table>
+            <Table hover borderless size='sm'>
               <tbody>
                 {companyData.map((company, i) => <tr key={i}>
                   <td>{company.ticker}</td>
-                  <td><Button size='sm' color='primary' disabled={loading} onClick={() => {this.updateStock(company)}}>Update</Button></td>
-                  <td><Button size='sm' color='danger' disabled={loading} onClick={() => {this.removeCompany(company)}}>X</Button></td>
+                  <td><Button size='sm' color='primary' disabled={loading} onClick={() => {this.updateStock(company)}}>Update</Button>
+                  <Button size='sm' color='danger' disabled={loading} onClick={() => {this.removeCompany(company)}}>X</Button></td>
                 </tr>)}
               </tbody>
-            </table>
-
+            </Table>
           </CardBody>
         </Card>
       </Container>
