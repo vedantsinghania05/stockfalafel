@@ -1,19 +1,13 @@
 import mongoose, { Schema } from 'mongoose'
 
 const shareSchema = new Schema({
+  amount: Number,
+  price: String,
+  date: Date,
   company: {
     type: Schema.ObjectId,
     ref: 'Company',
-    index: true
-  },
-  amount: {
-    type: Number
-  },
-  price: {
-    type: String
-  },
-  date: {
-    type: Date
+    index: true,
   },
   user: {
     type: Schema.ObjectId,
@@ -45,6 +39,5 @@ shareSchema.methods = {
 }
 
 const model = mongoose.model('Share', shareSchema)
-
 export const schema = model.schema
 export default model

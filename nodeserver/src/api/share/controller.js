@@ -3,10 +3,9 @@ import { Share } from '.'
 import { Company } from '../company'
 import { Stock } from '../stock'
 
-let today = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate())
-let offset = today.getTimezoneOffset()
+const today = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate())
 let d = new Date(today.setDate(today.getDate() - 1))
-d = d.setMinutes(d.getMinutes() - offset)
+d = d.setMinutes(d.getMinutes() - today.getTimezoneOffset())
 
 export const create = ({ body, user }, res, next) => {
   let fields = {amount: body.amount, user: body.user, price: '', date: ''}
@@ -36,38 +35,29 @@ export const create = ({ body, user }, res, next) => {
   .catch(next)
 }
 
-export const getShareByUserId = async ({ user }, res , next) => {
+export const getShareByUserId = ({ user }, res , next) => {
   let gShares = undefined
-  let companyTickers = []
   Share.find({user: user.id})
     .then(shares => {
+      if (!shares) return next(resInternal('Failed to find shares'))
       gShares = shares
       let shareCompanyIds = []
       for (let share of shares) shareCompanyIds.push(share.company)
-      return Company.find({ _id: {$in: shareCompanyIds} })
+      return Stock.find({ company: {$in: shareCompanyIds}, date: d })
     })
-    .then(companies => {
-      if (!companies) return next(resInternal('Failed to find companies'))
-
-      let companyIds = []
-      for (let company of companies) {
-        companyIds.push(company._id) 
-        companyTickers.push(company.ticker)
-      }
-      return Stock.find({ company: {$in: companyIds}, date: d })
-    })
-    .then(stocks => {
+    .then(async stocks => {
+      if (!stocks) return next(resInternal('Failed to find stocks'))
       let finalSharesList = []
       for (let i in gShares) {
         let stock = stocks.find(s => s.company.equals(gShares[i].company))
         if (stock) {
           const { id, amount, price, date, user } = gShares[i]
-
           let cp = stock.close
           let pp = cp - price
           let pa = pp * amount
-
-          finalSharesList.push({ id: id, company: companyTickers[i], amount: amount, price: price, date: date, user: user, cp: cp, pp: pp.toFixed(2), pa: pa.toFixed(2) })
+          
+          let result = await findTicker(gShares[i].company)
+          finalSharesList.push({ id: id, company: result.ticker, amount: amount, price: price, date: date, user: user, cp: cp, pp: pp.toFixed(2), pa: pa.toFixed(2) })
         } 
       }
       return resOk(res, finalSharesList)
@@ -82,4 +72,12 @@ export const destroy = ({ params }, res, next) => {
       if (!share) return next(resInternal('Failed to delete share'))
       return resNoContent(res, 'No Content')
     })
+}
+
+const findTicker = (companyId) => {
+	return new Promise((resolve, reject) => {
+		Company.findOne({_id: companyId})
+		.then(response => resolve(response))
+		.catch(error => reject(error))		
+	})
 }
