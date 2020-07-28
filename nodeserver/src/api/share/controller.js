@@ -3,13 +3,12 @@ import { Share } from '.'
 import { Company } from '../company'
 import { Stock } from '../stock'
 
-const today = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate())
-let d = new Date(today.setDate(today.getDate() - 1))
-d = d.setMinutes(d.getMinutes() - today.getTimezoneOffset())
+let d = undefined
+
 
 export const create = ({ body, user }, res, next) => {
   let fields = {amount: body.amount, user: body.user, price: '', date: ''}
-
+  createDate()
   Company.findOne({ ticker: body.ticker })
   .then(company => {
     if (!company) return next(resInternal('Failed to find company'))
@@ -37,6 +36,7 @@ export const create = ({ body, user }, res, next) => {
 
 export const getShareByUserId = ({ user }, res , next) => {
   let gShares = undefined
+  createDate()
   Share.find({user: user.id})
     .then(shares => {
       if (!shares) return next(resInternal('Failed to find shares'))
@@ -80,4 +80,16 @@ const findTicker = (companyId) => {
 		.then(response => resolve(response))
 		.catch(error => reject(error))		
 	})
+}
+
+const createDate = () => {
+  const today = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate())
+  let a = 1
+
+   if (today.getDay() === 6) a = 1
+   if (today.getDay() === 0) a = 2
+   if (today.getDay() === 1) a = 3
+
+  d = new Date(today.setDate(today.getDate() - a))
+  d = d.setMinutes(d.getMinutes() - today.getTimezoneOffset())
 }
