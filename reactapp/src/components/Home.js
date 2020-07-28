@@ -11,11 +11,10 @@ class Home extends Component {
     super();
     this.state = { result: '', userCompanyList: [], showGraph: false, selectedTicker: undefined, stockChartXValues: [], stockChartYClose: [], stockChartYOpen: [], stockChartYHigh: [], stockChartYLow: [], 
     companiesStr: '', loading: false, percentChange: [], numericChange: [], recentMovingAvgs: [], olderMovingAvgs: [], stockAvgXValues: [], 
-    toggleGraph: false, showDataTable: false, comparisonCompany: '', comparisonXVals: [], comparisonYVals: [], comparisonLabel: '', volume: [], ticker: '', amount: '', purchasedStocks: [] }
+    toggleGraph: false, showDataTable: false, comparisonCompany: '', comparisonXVals: [], comparisonYVals: [], comparisonLabel: '', volume: [] }
   }
 
   componentDidMount = () => {
-    this.getShare()
     getUser('me', getUserToken(),
       response => {
         let companyIds = []
@@ -250,52 +249,12 @@ class Home extends Component {
     )
   }
 
-  submitPurchasedStocks = () => {
-    let { ticker, amount, purchasedStocks } = this.state
-    createShare(ticker, amount, this.props.userInfo.id,
-      response => {
-        purchasedStocks.push(response.data)
-        this.setState({purchasedStocks: purchasedStocks, ticker: '', amount: ''})
-        
-      },
-      error => {
-        this.setState({result: error.message})
-      }
-    )
-  }
-
-  getShare = () => {
-    let { purchasedStocks } = this.state
-    getShares(getUserToken(), 
-      response => {
-        for (let i of response.data) purchasedStocks.push(i)
-        this.setState({purchasedStocks: purchasedStocks})
-      },
-      error => {
-        this.setState({result: error.message})
-      }
-    )
-  }
-
-  soldStock = (u,i) => {
-    let {purchasedStocks} = this.state
-    removeShares(u.id, getUserToken(),
-      response => {
-        purchasedStocks.splice(i, 1)
-        this.setState({purchasedStocks: purchasedStocks})
-
-      },
-      error => {
-        this.setState({result: error.message})
-      }
-    )
-  }
 
 
   render() {
     let { result, comparisonCompany, userCompanyList, showGraph, selectedTicker, stockChartXValues, stockChartYClose, stockChartYOpen, stockChartYLow, 
     stockChartYHigh, recentMovingAvgs, olderMovingAvgs, companiesStr, loading, percentChange, numericChange, stockAvgXValues, toggleGraph, showDataTable, 
-    comparisonXVals, comparisonYVals, comparisonLabel, volume, ticker, amount, purchasedStocks } = this.state
+    comparisonXVals, comparisonYVals, comparisonLabel, volume } = this.state
 
     return (
       <Container className='dashboard'>
@@ -330,41 +289,8 @@ class Home extends Component {
                   </Table>}
 
                   <br/>
-                  
-                  <InputGroup>
-                    <Input type='string' placeholder='Ticker' bsSize='sm' value={ticker} onChange={this.onChangeTicker}/>
-                    <Input type='number' placeholder='Amount' bsSize='sm' value={amount} onChange={this.onChangeAmount}/>
-                  </InputGroup>
-                  
-                  <Button size='sm' color='primary' onClick={this.submitPurchasedStocks}>Submit</Button>
                 </Col>
               </Row>
-              
-              {purchasedStocks.length >= 1 && <Table borderless hover size='sm'>
-                <thead>
-                  <tr>
-                    <th>Ticker</th>
-                    <th>Amount</th>
-                    <th>Date of Buy</th>
-                    <th>Price @ Buy</th>
-                    <th>Current Price</th>
-                    <th>Profit Per</th>
-                    <th>Profit For All</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {purchasedStocks.map((u, i) => <tr key={i}>
-                    <td>{u.company}</td>
-                    <td>{u.amount}</td>
-                    <td>{u.date.split('T')[0]}</td>
-                    <td>{'$' + u.price}</td>
-                    <td>{'$' + u.cp}</td>
-                    <td>{'$' + u.pp}</td>
-                    <td>{'$' + u.pa}</td>
-                    <th><Button size='sm' color='primary' onClick={() => this.soldStock(u,i)}>x</Button></th>
-                  </tr>)}
-                </tbody>
-              </Table>}
             </div>}
 
             {showGraph && <div>
