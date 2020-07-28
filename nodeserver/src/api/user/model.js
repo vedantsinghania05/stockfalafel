@@ -17,7 +17,7 @@ const userSchema = new Schema({
     minlength: 6
   },
   companies: [{
-    type: Schema.ObjectId,
+    type: String,
     ref: 'Company',
     index: true
   }]

@@ -5,7 +5,7 @@ const shareSchema = new Schema({
   price: String,
   date: Date,
   company: {
-    type: Schema.ObjectId,
+    type: String,
     ref: 'Company',
     index: true,
   },

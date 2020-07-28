@@ -2,7 +2,7 @@ import mongoose, { Schema } from 'mongoose'
 
 const stockSchema = new Schema({
   company: {
-    type: Schema.ObjectId,
+    type: String,
     ref: "Company",
     index: true
   },

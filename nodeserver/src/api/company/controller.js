@@ -24,19 +24,20 @@ export const index = ({ query }, res, next) => {
 }
 
 export const destroy = ({ params, user }, res, next) => {
+  console.log("hello", params)
   User.findById(user.id)
     .then(user => {
       if (!user) return next(resInternal('Failed to find user'))
-      user.companies.splice(user.companies.indexOf(params.id), 1)
+      user.companies.splice(user.companies.indexOf(params.ticker), 1)
       return user.save();
     })
     .then(user => {
       if (!user) return next(resInternal('Failed to update user'))
-      return Company.deleteOne({ _id: params.id})
+      return Company.deleteOne({ ticker: params.ticker})
     })
     .then(company => {
       if (!company) return next(resInternal('Failed to delete company'))
-      return Stock.deleteMany({company: params.id})
+      return Stock.deleteMany({company: params.ticker})
     })
     .then(stocks => {
       if (!stocks) return next(resInternal('Failed to delete stocks'))
@@ -48,11 +49,11 @@ export const destroy = ({ params, user }, res, next) => {
 export const getUsersCompanies = ({ user }, res, next) => {
   let usersCompanies = []
 
-  for (let companyId of user.companies) {
-    usersCompanies.push(mongoose.Types.ObjectId(companyId))
+  for (let companyTicker of user.companies) {
+    usersCompanies.push(companyTicker)
   }
 
-  Company.find({ _id: { $in: usersCompanies } })
+  Company.find({ ticker: { $in: usersCompanies } })
     .then(companies => {
       if (!companies) return next(resInternal('Failed to find companies'))
       return resOk(res, companies.map(c => c.view(true)))

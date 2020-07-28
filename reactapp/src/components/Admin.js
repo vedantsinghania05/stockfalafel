@@ -61,8 +61,9 @@ class Admin extends Component {
   }
 
   removeCompany = (company) => {
-    let id = company._id
-    deleteCompany(id, getUserToken(),
+    let ticker= company.ticker
+
+    deleteCompany(getUserToken(), ticker,
       response => {
         this.getCompanies()
       },

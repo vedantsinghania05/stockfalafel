@@ -6,7 +6,7 @@ const axios = require('axios')
 
 
 export const getStoredStockData = ({ params }, res, next) => {
-	Stock.find({ company: params.id })
+	Stock.find({ company: params.ticker })
 		.sort('-date')
 		.then(stocks => {
 			if (!stocks) return next(resInternal('Failed to find stocks'))
@@ -30,7 +30,7 @@ export const getStockData = async ({ body }, res, next) => {
 		let stock = stockList[i]
 		for (let a in stock['Time Series (Daily)']) {
 			formattedStockList.push({
-			company: body.company.id,
+			company: body.company.ticker,
 			date: a,
 			open: stock['Time Series (Daily)'][a]['1. open'],
 			high: stock['Time Series (Daily)'][a]['2. high'],
@@ -44,7 +44,7 @@ export const getStockData = async ({ body }, res, next) => {
 	Company.deleteOne({_id: invalidCompany})
 		.then(company => {
 			if (!company) return next(resInternal('Failed to delete company'))
-			return Stock.deleteMany({company: body.company.id })
+			return Stock.deleteMany({company: body.company.ticker })
 		})
 		.then(stocks => {
 			if (!stocks) return next(resInternal('Failed to remove stocks'))

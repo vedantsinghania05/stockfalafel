@@ -89,14 +89,12 @@ class Home extends Component {
   }
 
   sendtoGraph = (company) => {
-    let companyId = undefined
 
-    if (company.id) companyId = company.id
-    if (company._id) companyId = company._id
+    let companyTicker = company.ticker
 
     this.setState({loading: true})
 
-    getStoredStockData(companyId, getUserToken(),
+    getStoredStockData(getUserToken(), companyTicker, 
       response => {
         this.setState({ showGraph: true, selectedTicker: company.ticker }) 
         this.fn(response.data)
@@ -113,7 +111,7 @@ class Home extends Component {
     let usersCompanies = [...this.props.userInfo.companies]
 
     for (let i in usersCompanies) {
-      if (String(usersCompanies[i]) === String(company.id)) {
+      if (String(usersCompanies[i]) === String(company.ticker)) {
         usersCompanies.splice(i, 1)
       }
     }
@@ -227,16 +225,13 @@ class Home extends Component {
     e.preventDefault()
     this.setState({loading: true})
     let { comparisonCompany } = this.state;
-    let companyId = undefined
 
     getCompanyByTicker(getUserToken(), comparisonCompany,
       response => {
-        if (response.data.id) companyId = response.data.id
-        if (response.data._id) companyId = response.data._id
+        let companyTicker = response.data.ticker
 
-        getStoredStockData(companyId, getUserToken(),
+        getStoredStockData(getUserToken(), companyTicker, 
           response => {
-            console.log('comparison company stock data: ', response.data)
             this.setState({comparisonXVals: [], comparisonYVals: [] })
             for (let i in response.data) {
               this.state.comparisonXVals.push(response.data[i].date)

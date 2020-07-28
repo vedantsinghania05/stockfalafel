@@ -22,7 +22,7 @@ const router = new Router()
  token({ required: true }),
  getCompanyByTicker)
 
- router.delete('/:id',
+ router.delete('/:ticker',
  token({ required: true}),
  destroy)
 

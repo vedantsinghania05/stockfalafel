@@ -10,7 +10,7 @@ router.put('/',
 	token({ required: true }),
 	getStockData)
 
-router.get('/:id',
+router.get('/:ticker',
 	token({ required: true }),
 	getStoredStockData)
 

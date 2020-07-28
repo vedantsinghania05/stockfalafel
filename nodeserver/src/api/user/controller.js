@@ -49,7 +49,7 @@ export const update = ({ params, body, user }, res, next) => {
       .then(company => {
         if (!company) return next(resInternal('Failed to find companies'))
         initCompany = company
-        return Stock.find({ company: company.id })
+        return Stock.find({ company: company.ticker })
       })
       .then(stocks => {
         if (stocks.length === 0) return resOk(res, 'no data for company')
@@ -60,7 +60,7 @@ export const update = ({ params, body, user }, res, next) => {
         if (!user) return next(resNotFound('Failed to find user'));
 
         let usersCompanies = [...user.companies]
-        usersCompanies.push(gCompanies._id)
+        usersCompanies.push(gCompanies.ticker)
 
         if (body.email) user.email = body.email;
         if (gCompanies) user.companies = usersCompanies

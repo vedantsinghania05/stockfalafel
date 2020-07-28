@@ -84,8 +84,8 @@ export const getStock = (token, company, successCbk, errorCbk) => {
   .catch(errorCbk);
 }
 
-export const getStoredStockData = (id, token, successCbk, errorCbk) => {
-  axiosInstance.get(nodeserverUrl + '/stocks/' + id,
+export const getStoredStockData = (token, ticker, successCbk, errorCbk) => {
+  axiosInstance.get(nodeserverUrl + '/stocks/' + ticker,
     { headers: { Authorization: 'Bearer ' + token } }
   )
   .then(successCbk)
@@ -133,9 +133,9 @@ export const getUsersCompanies = (token, successCbk, errorCbk) => {
   .catch(errorCbk)
 }
 
-export const deleteCompany = (id, token, successCbk, errorCbk) => {
-  axiosInstance.delete(nodeserverUrl + '/companies/' + id,
-    { headers: { Authorization: 'Bearer ' + token } }
+export const deleteCompany = (token, ticker, successCbk, errorCbk) => {
+  axiosInstance.delete(nodeserverUrl + '/companies/' + ticker,
+    { headers: { Authorization: 'Bearer ' + token } },
   )
   .then(successCbk)
   .catch(errorCbk)
