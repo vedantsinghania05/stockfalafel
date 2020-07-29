@@ -7,28 +7,26 @@ let d = undefined
 
 
 export const create = ({ body, user }, res, next) => {
-  let fields = {amount: body.amount, user: body.user, price: '', date: ''}
+  let fields = {amount: body.amount, user: body.user, price: body.price, date: body.date, company: body.ticker}
+  let gStock = undefined
   createDate()
   Company.findOne({ ticker: body.ticker })
   .then(company => {
     if (!company) return next(resInternal('Failed to find company'))
-    fields.company = company.ticker
     return Stock.findOne({company: company.ticker, date: d})
   })
   .then(stock => {
     if (!stock) return next(resInternal('Failed to find stock'))
-    fields.date = stock.date
-    fields.price = stock.close
+    gStock = stock
     return Share.create(fields)
   })
   .then(share => {
     if (!share) return next(resInternal('Failed to create share'))
-    fields.id = share.id
-    fields.company = body.ticker
-    fields.user = user
-    fields.cp = share.price
-    fields.pp = 0
-    fields.pa = 0
+
+    fields.volume = gStock.volume
+    fields.id = share._id
+    fields.cp = gStock.close
+    fields.pa = (gStock.close-share.price)*share.amount
     return resCreated(res, fields)
   })
   .catch(next)
@@ -55,8 +53,9 @@ export const getShareByUserId = ({ user }, res , next) => {
           let cp = stock.close
           let pp = cp - price
           let pa = pp * amount
+          let volume = stock.volume
           
-          finalSharesList.push({ id: id, company: company, amount: amount, price: price, date: date, user: user, cp: cp, pp: pp.toFixed(2), pa: pa.toFixed(2) })
+          finalSharesList.push({ volume: volume, id: id, company: company, amount: amount, price: price, date: date, user: user, cp: cp, pa: pa.toFixed(2) })
         } 
       }
       return resOk(res, finalSharesList)

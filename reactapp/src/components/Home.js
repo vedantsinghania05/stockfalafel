@@ -11,10 +11,11 @@ class Home extends Component {
     super();
     this.state = { result: '', userCompanyList: [], showGraph: false, selectedTicker: undefined, stockChartXValues: [], stockChartYClose: [], stockChartYOpen: [], stockChartYHigh: [], stockChartYLow: [], 
     companiesStr: '', loading: false, percentChange: [], numericChange: [], recentMovingAvgs: [], olderMovingAvgs: [], stockAvgXValues: [], 
-    toggleGraph: false, showDataTable: false, comparisonCompany: '', comparisonXVals: [], comparisonYVals: [], comparisonLabel: '', volume: [] }
+    toggleGraph: false, showDataTable: false, comparisonCompany: '', comparisonXVals: [], comparisonYVals: [], comparisonLabel: '', volume: [], ticker: '', amount: '', purchasedStocks: [], date: '', cost: '' }
   }
 
   componentDidMount = () => {
+    this.getShare()
     getUser('me', getUserToken(),
       response => {
         let companyIds = []
@@ -249,12 +250,67 @@ class Home extends Component {
     )
   }
 
+  componentDidMount = () => this.getShare()
+
+  onChangeTicker = (e) => this.setState({ticker: e.target.value.toUpperCase()})
+
+  onChangeAmount = (e) => this.setState({amount: e.target.value})
+
+  onChangeDate = (e) => this.setState({date: e.target.value})
+
+  onChangeCost = (e) => this.setState({cost: e.target.value})
+
+
+  removeResult = () => this.setState({result: ''})
+
+
+  submitPurchasedStocks = () => {
+    let { ticker, amount, date, cost, purchasedStocks } = this.state
+    createShare(ticker, amount, date, cost, this.props.userInfo.id,
+      response => {
+        purchasedStocks.push(response.data)
+        this.setState({purchasedStocks: purchasedStocks, ticker: '', amount: ''})
+        
+      },
+      error => {
+        this.setState({result: error.message})
+      }
+    )
+  }
+
+  getShare = () => {
+    let { purchasedStocks } = this.state
+    getShares(getUserToken(), 
+      response => {
+        for (let i of response.data) purchasedStocks.push(i)
+        this.setState({purchasedStocks: purchasedStocks})
+      },
+      error => {
+        this.setState({result: error.message})
+      }
+    )
+  }
+
+  soldStock = (u,i) => {
+    let {purchasedStocks} = this.state
+    removeShares(u.id, getUserToken(),
+      response => {
+        purchasedStocks.splice(i, 1)
+        this.setState({purchasedStocks: purchasedStocks})
+
+      },
+      error => {
+        this.setState({result: error.message})
+      }
+    )
+  }
+
 
 
   render() {
     let { result, comparisonCompany, userCompanyList, showGraph, selectedTicker, stockChartXValues, stockChartYClose, stockChartYOpen, stockChartYLow, 
     stockChartYHigh, recentMovingAvgs, olderMovingAvgs, companiesStr, loading, percentChange, numericChange, stockAvgXValues, toggleGraph, showDataTable, 
-    comparisonXVals, comparisonYVals, comparisonLabel, volume } = this.state
+    comparisonXVals, comparisonYVals, comparisonLabel, volume, ticker, amount, date, cost, purchasedStocks } = this.state
 
     return (
       <Container className='dashboard'>
@@ -291,6 +347,48 @@ class Home extends Component {
                   <br/>
                 </Col>
               </Row>
+              <InputGroup>
+              <Input type='string' placeholder='Ticker' bsSize='sm' value={ticker} onChange={this.onChangeTicker}/>
+              <Input type='number' placeholder='Amount' bsSize='sm' value={amount} onChange={this.onChangeAmount}/>
+              <Input type='date' placeholder='Date Bought' bsSize='sm' value={date} onChange={this.onChangeDate}></Input>
+              <Input type='price' placeholder='Price' bsSize='sm' value={cost} onChange={this.onChangeCost}></Input>
+            </InputGroup>
+                  
+            <Button size='sm' color='primary' onClick={this.submitPurchasedStocks}>Buy</Button>
+
+            {purchasedStocks.length >= 1 && <Table borderless hover size='sm'>
+                <thead>
+                  <tr>
+                    <th>Ticker</th>
+                    <th>Price</th>
+                    <th>Change %</th>
+                    <th>Volume</th>
+                    <th>Date Bought</th>
+                    <th>Shares</th>
+                    <th>Cost</th>
+                    <th>Market value</th>
+                    <th>Gain $</th>
+                    <th>Gain %</th>
+                    <th>Change $</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {purchasedStocks.map((u, i) => <tr key={i}>
+                    <td>{u.company}</td>
+                    <td>{'$' + u.cp}</td>
+                    <td>{'Change' + '%'}</td>
+                    <td>{u.volume}</td>
+                    <td>{u.date.split('T')[0]}</td>
+                    <td>{u.amount}</td>
+                    <td>{'$' + u.price}</td>
+                    <td>{'$' + u.amount * u.cp}</td>
+                    <td>{'$' + u.pa}</td>
+                    <td>{((u.cp - u.price)/u.price)*100 + '%'}</td>
+                    <td>{'$' + 'Change'}</td>
+                    <td><Button size='sm' color='primary' onClick={() => this.soldStock(u,i)}>Sell</Button></td>
+                  </tr>)}
+                </tbody>
+              </Table>}
             </div>}
 
             {showGraph && <div>
