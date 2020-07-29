@@ -3,7 +3,7 @@ import { Container, Card, CardBody, Button, Input, Form, Spinner, Row, Col, Tabl
 import Plot from 'react-plotly.js';
 import { signedInUserMstp, signedInUserMdtp, getUserToken } from '../redux/containers/SignedInUserCtr';
 import { connect } from 'react-redux';
-import { updateUser, getStoredStockData, getUser, getUsersCompanies, getCompanyByTicker, createShare, getShares, removeShares } from '../nodeserverapi'
+import { updateUser, getStoredStockData, getUsersCompanies, createShare, getShares, removeShares } from '../nodeserverapi'
 import errorAlert from './errorAlert.png'
 
 class Home extends Component {
@@ -16,26 +16,7 @@ class Home extends Component {
 
   componentDidMount = () => {
     this.getShare()
-    getUser('me', getUserToken(),
-      response => {
-        let companyIds = []
-        for (let company of response.data.companies) companyIds.push(company)
-
-        getUsersCompanies(getUserToken(),
-          response => {
-            this.setState({ userCompanyList: response.data })
-          },
-          error => {
-            this.setState({result: error.message})
-          }
-        )
-
-      },
-      error => {
-        this.setState({result: error.message})
-      }
-    )
-
+    this.getCompaniesForUser()
   }
 
   onChangeCompaniesStr = (e) => this.setState({ companiesStr: e.target.value.toUpperCase() })
@@ -46,6 +27,20 @@ class Home extends Component {
 
   onChangeAmount = (e) => this.setState({amount: e.target.value})
 
+  onChangeDate = (e) => this.setState({date: e.target.value})
+
+  onChangeCost = (e) => this.setState({cost: e.target.value})
+
+  getCompaniesForUser = () => {
+    getUsersCompanies(getUserToken(),
+      response => {
+        this.setState({ userCompanyList: response.data })
+      },
+      error => {
+        this.setState({result: error.message})
+      }
+    )
+  }
 
   chooseCompanies = (e) => {
     let { companiesStr } = this.state
@@ -55,43 +50,16 @@ class Home extends Component {
     updateUser(userInfo.id, getUserToken(), userInfo.email, companiesStr, true,
       response => {
         if (response.data === 'no data for company') this.setState({ result: "No Data For Company", companiesStr: '' })
-        else {
-          this.setState({ result: '' })
-          getUser('me', getUserToken(),
-            response => {
-              this.props.setUserInfo(response.data)
-              let companyIds = []
-              for (let company of response.data.companies) {
-                companyIds.push(company)
-              }
-      
-              getUsersCompanies(getUserToken(),
-                response => {
-                  this.setState({ userCompanyList: response.data, companiesStr: '' })
-                },
-                error => {
-                  this.setState({result: error.message})
-                }
-              )
-      
-            },
-            error => {
-              this.setState({result: error.message})
-            }
-          )
-        }
+        else this.getCompaniesForUser()
       },
       error => {
         this.setState({result: error.message})
       }
     )
-
   }
 
   sendtoGraph = (company) => {
-
     let companyTicker = company.ticker
-
     this.setState({loading: true})
 
     getStoredStockData(getUserToken(), companyTicker, 
@@ -107,7 +75,6 @@ class Home extends Component {
   }
 
   deleteCompany = (company) => {
-    
     let usersCompanies = [...this.props.userInfo.companies]
 
     for (let i in usersCompanies) {
@@ -117,34 +84,13 @@ class Home extends Component {
     }
 
     updateUser(this.props.userInfo.id, getUserToken(), this.props.userInfo.email, usersCompanies, false,
-    response => {
-      getUser('me', getUserToken(),
-        response => {
-          this.props.setUserInfo(response.data)
-          let companyIds = []
-          for (let company of response.data.companies) {
-            companyIds.push(company)
-          }
-
-          getUsersCompanies(getUserToken(),
-            response => {
-              this.setState({ userCompanyList: response.data , companiesStr: '' })
-            },
-            error => {
-              this.setState({result: error.message})
-            }
-          )
-        },
-        error => {
-          this.setState({result: error.message})
-        }
-      )
-    },
-    error => {
-      this.setState({result: error.message})
-    }
-  )
-
+      response => {
+        this.getCompaniesForUser()
+      },
+      error => {
+        this.setState({result: error.message})
+      }
+    )
   }
 
   back = () => { 
@@ -163,7 +109,6 @@ class Home extends Component {
 
     for (let i = 0; i < sortedStockData.length-1; i++) {
       // Calculate 50 day moving average
-
       let lastFiftyAdded = 0
       let lastFiftyAvg = -1
       let addedNoCount50 = 0
@@ -179,7 +124,6 @@ class Home extends Component {
       tempRecentMovingAvgs.push(lastFiftyAvg.toFixed(2))
 
       // Calculate 200 day moving average
-
       let last200Added = 0
       let last200Avg = -1
       let addedNoCount200 = 0
@@ -195,7 +139,6 @@ class Home extends Component {
       tempOlderMovingAvgs.push(last200Avg.toFixed(2))
 
       // Stock Data
-
       let b = +i+1
       stockAvgXValues.push(sortedStockData[i].date)
       stockChartXValues.push(stockData[i].date)
@@ -226,43 +169,20 @@ class Home extends Component {
     this.setState({loading: true})
     let { comparisonCompany } = this.state;
 
-    getCompanyByTicker(getUserToken(), comparisonCompany,
+    getStoredStockData(getUserToken(), comparisonCompany, 
       response => {
-        let companyTicker = response.data.ticker
-
-        getStoredStockData(getUserToken(), companyTicker, 
-          response => {
-            this.setState({comparisonXVals: [], comparisonYVals: [] })
-            for (let i in response.data) {
-              this.state.comparisonXVals.push(response.data[i].date)
-              this.state.comparisonYVals.push(response.data[i].close)
-            }
-            this.setState({comparisonLabel: comparisonCompany, comparisonCompany: '', loading: false})
-          },
-          error => {
-            this.setState({result: error.message})
-          }
-        )
+        this.setState({comparisonXVals: [], comparisonYVals: [] })
+        for (let i in response.data) {
+          this.state.comparisonXVals.push(response.data[i].date)
+          this.state.comparisonYVals.push(response.data[i].close)
+        }
+        this.setState({comparisonLabel: comparisonCompany, comparisonCompany: '', loading: false})
       },
       error => {
-        this.setState({result: error.message, loading: false})
+        this.setState({result: error.message})
       }
     )
   }
-
-  componentDidMount = () => this.getShare()
-
-  onChangeTicker = (e) => this.setState({ticker: e.target.value.toUpperCase()})
-
-  onChangeAmount = (e) => this.setState({amount: e.target.value})
-
-  onChangeDate = (e) => this.setState({date: e.target.value})
-
-  onChangeCost = (e) => this.setState({cost: e.target.value})
-
-
-  removeResult = () => this.setState({result: ''})
-
 
   submitPurchasedStocks = () => {
     let { ticker, amount, date, cost, purchasedStocks } = this.state

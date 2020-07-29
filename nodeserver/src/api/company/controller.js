@@ -60,12 +60,3 @@ export const getUsersCompanies = ({ user }, res, next) => {
     })
     .catch(next)
 }
-
-export const getCompanyByTicker = ({ body }, res, next) => {
-  Company.findOne({ ticker: body.ticker })
-    .then(company => {
-      if (!company) return next(resInternal('Failed to find company'))
-      return resOk(res, company.view(true))
-    })
-    .catch(next)
-}
