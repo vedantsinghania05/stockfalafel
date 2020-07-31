@@ -2,7 +2,7 @@ import mongoose, { Schema } from 'mongoose'
 
 const shareSchema = new Schema({
   amount: Number,
-  price: String,
+  cost: String,
   date: Date,
   company: {
     type: String,

@@ -134,14 +134,14 @@ export const deleteCompany = (token, ticker, successCbk, errorCbk) => {
  * Share
  */
 
-export const createShare = (ticker, amount, date, price, user, successCbk, errorCbk) => {
+export const createShare = (ticker, amount, date, cost, user, successCbk, errorCbk) => {
   axiosInstance.post(nodeserverUrl + '/shares/',
     {
       access_token: masterKey,
       ticker: ticker,
       amount: amount,
       date: date,
-      price: price,
+      cost: cost,
       user: user
     }
   )
@@ -159,6 +159,14 @@ export const getShares = (token, successCbk, errorCbk) => {
 
 export const removeShares = (id, token, successCbk, errorCbk) => {
   axiosInstance.delete(nodeserverUrl + '/shares/' + id,
+    { headers: { Authorization: 'Bearer ' + token } }
+  )
+  .then(successCbk)
+  .catch(errorCbk)
+}
+
+export const findCurrentPrice = (token, ticker, successCbk, errorCbk) => {
+  axiosInstance.get(nodeserverUrl + '/shares/' + ticker,
     { headers: { Authorization: 'Bearer ' + token } }
   )
   .then(successCbk)

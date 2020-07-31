@@ -3,17 +3,13 @@ import { Share } from '.'
 import { Company } from '../company'
 import { Stock } from '../stock'
 
-let d = undefined
-
-
-export const create = ({ body, user }, res, next) => {
-  let fields = {amount: body.amount, user: body.user, price: body.price, date: body.date, company: body.ticker}
+export const create = ({ body }, res, next) => {
+  let fields = {amount: body.amount, user: body.user, cost: body.cost, date: body.date, company: body.ticker}
   let gStock = undefined
-  createDate()
   Company.findOne({ ticker: body.ticker })
   .then(company => {
     if (!company) return next(resInternal('Failed to find company'))
-    return Stock.findOne({company: company.ticker, date: d})
+    return Stock.findOne({company: company.ticker, date: body.date})
   })
   .then(stock => {
     if (!stock) return next(resInternal('Failed to find stock'))
@@ -22,44 +18,39 @@ export const create = ({ body, user }, res, next) => {
   })
   .then(share => {
     if (!share) return next(resInternal('Failed to create share'))
-
-    fields.volume = gStock.volume
-    fields.id = share._id
-    fields.cp = gStock.close
-    fields.pa = (gStock.close-share.price)*share.amount
-    return resCreated(res, fields)
+    return resCreated(res, share)
   })
   .catch(next)
 }
 
 export const getShareByUserId = ({ user }, res , next) => {
   let gShares = undefined
-  createDate()
+  let shareCompanyTickers = []
+  let finalSharesList = []
   Share.find({user: user.id})
     .then(shares => {
       if (!shares) return next(resInternal('Failed to find shares'))
       gShares = shares
-      let shareCompanyTickers = []
       for (let share of shares) shareCompanyTickers.push(share.company)
-      return Stock.find({ company: {$in: shareCompanyTickers}, date: d })
+      return Stock.find({ company: {$in: shareCompanyTickers} })
     })
     .then(stocks => {
       if (!stocks) return next(resInternal('Failed to find stocks'))
-      let finalSharesList = []
       for (let i in gShares) {
-        let stock = stocks.find(s => s.company === gShares[i].company)
+        let stock = stocks.filter(s => s.company === gShares[i].company)
         if (stock) {
-          const { id, amount, company, price, date, user } = gShares[i]
-          let cp = stock.close
-          let pp = cp - price
-          let pa = pp * amount
-          let volume = stock.volume
-          
-          finalSharesList.push({ volume: volume, id: id, company: company, amount: amount, price: price, date: date, user: user, cp: cp, pa: pa.toFixed(2) })
+          const { id, amount, company, cost, date, user } = gShares[i]
+          let cp = stock[0].close
+          let pp = cp - cost
+          let gd = pp * amount
+          finalSharesList.push({ 
+            user: user, id: id, company: company, date: date, cp: cp.toFixed(2), amount: amount, cost: Number(cost).toFixed(2), mv: (amount*cp).toFixed(2), gd: gd.toFixed(2), 
+            gp: Number(((cp-cost)/cost)*100).toFixed(2), changeD: (((cp-stock[1].close)/stock[1].close)*100).toFixed(2), changeW: (((cp-stock[5].close)/stock[5].close)*100).toFixed(2),
+            changeM: (((cp-stock[25].close)/stock[25].close)*100).toFixed(2), changeY: (((cp-stock[259].close)/stock[259].close)*100).toFixed(2)
+          })
         } 
       }
       return resOk(res, finalSharesList)
-
     })
     .catch(next)
 }
@@ -72,14 +63,10 @@ export const destroy = ({ params }, res, next) => {
     })
 }
 
-const createDate = () => {
-  const today = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate())
-  let a = 1
-
-   if (today.getDay() === 6) a = 1
-   if (today.getDay() === 0) a = 2
-   if (today.getDay() === 1) a = 3
-
-  d = new Date(today.setDate(today.getDate() - a))
-  d = d.setMinutes(d.getMinutes() - today.getTimezoneOffset())
+export const findRecentPrice = ({ params }, res, next) => {
+  Stock.find({company: params.ticker})
+    .then(stocks => {
+      if (!stocks) return next(resInternal('Failed to find stocks'))
+      return resOk(res, stocks[0])
+    })
 }
