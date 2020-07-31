@@ -64,3 +64,32 @@ const fn = (company) => {
 		.catch(error => reject(error))		
 	})
 }
+
+export const getPercentageIncreases = ({ body }, res, next) => {
+	let dollarIncreaseList = []
+	let percentIncreaseList = []
+	let increases = []
+	Stock.find({ company: {$in: body.tickers} })
+	.sort('-date')
+	.then(stocks => {
+		if (!stocks) return next(resInternal('Failed to find stocks'))
+		for (let i in body.tickers) {
+		let stock = stocks.filter(s => s.company === body.tickers[i])
+
+		for (let range of body.rangeList) {
+
+			let currentPrice = stock[0].close
+			let previousPrice = stock[range].close
+			let dollarIncrease = (currentPrice - previousPrice).toFixed(2)
+			let percentageIncrease = (((currentPrice-previousPrice) / previousPrice) * 100).toFixed(2)
+			dollarIncreaseList.push(dollarIncrease)
+			percentIncreaseList.push(percentageIncrease)
+		}
+		increases.push({dollar: dollarIncreaseList, percentage: percentIncreaseList})
+		dollarIncreaseList = []
+		percentIncreaseList = []
+	}
+		return resOk(res, increases)
+	})
+	.catch(next)
+}

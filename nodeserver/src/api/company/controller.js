@@ -3,6 +3,7 @@ import mongoose from 'mongoose'
 import { Company } from '.'
 import { Stock } from '../stock/index'
 import { User } from '../user/index'
+import Axios from 'axios'
 
 
 export const create = ({ body }, res, next) => {
@@ -50,8 +51,10 @@ export const getUsersCompanies = ({ user }, res, next) => {
   let usersCompanies = []
 
   for (let companyTicker of user.companies) {
+    console.log('>>>>>> ct', companyTicker)
     usersCompanies.push(companyTicker)
   }
+  console.log('>>>>>>>> uc', usersCompanies)
 
   Company.find({ ticker: { $in: usersCompanies } })
     .then(companies => {
