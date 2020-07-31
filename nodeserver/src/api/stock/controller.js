@@ -68,6 +68,7 @@ const fn = (company) => {
 export const getPercentageIncreases = ({ body }, res, next) => {
 	let dollarIncreaseList = []
 	let percentIncreaseList = []
+	let currentPriceList = []
 	let increases = []
 	Stock.find({ company: {$in: body.tickers} })
 	.sort('-date')
@@ -82,12 +83,14 @@ export const getPercentageIncreases = ({ body }, res, next) => {
 			let previousPrice = stock[range].close
 			let dollarIncrease = (currentPrice - previousPrice).toFixed(2)
 			let percentageIncrease = (((currentPrice-previousPrice) / previousPrice) * 100).toFixed(2)
+			currentPriceList.push(currentPrice)
 			dollarIncreaseList.push(dollarIncrease)
 			percentIncreaseList.push(percentageIncrease)
 		}
-		increases.push({dollar: dollarIncreaseList, percentage: percentIncreaseList})
+		increases.push({dollar: dollarIncreaseList, percentage: percentIncreaseList, currentPrice: currentPriceList})
 		dollarIncreaseList = []
 		percentIncreaseList = []
+		currentPriceList = []
 	}
 		return resOk(res, increases)
 	})

@@ -304,6 +304,7 @@ class Home extends Component {
                     <thead>
                       <tr>
                         <th>Ticker</th>
+                        <th>Price</th>
                         <th>Change $</th>
                         <th>Change %</th>
                       </tr>
@@ -312,15 +313,19 @@ class Home extends Component {
                       {userCompanyList.map((company, i) => <tr key={i}>
                         <td>{company.ticker}</td>
 
+                        {rangeWords === 'Day' && <td>{'$'+increases[i].currentPrice[0]}</td>}
                         {rangeWords === 'Day' && <td>{'$'+increases[i].dollar[0]}</td>}
                         {rangeWords === 'Day' && <td>{increases[i].percentage[0]+'%'}</td>}
 
+                        {rangeWords === 'Week' && <td>{'$'+increases[i].currentPrice[1]}</td>}
                         {rangeWords === 'Week' && <td>{'$'+increases[i].dollar[1]}</td>}
                         {rangeWords === 'Week' && <td>{increases[i].percentage[1]+'%'}</td>}
 
+                        {rangeWords === 'Month' && <td>{'$'+increases[i].currentPrice[2]}</td>}
                         {rangeWords === 'Month' && <td>{'$'+increases[i].dollar[2]}</td>}
                         {rangeWords === 'Month' && <td>{increases[i].percentage[2]+'%'}</td>}
 
+                        {rangeWords === 'Year' && <td>{'$'+increases[i].currentPrice[3]}</td>}
                         {rangeWords === 'Year' && <td>{'$'+increases[i].dollar[3]}</td>}
                         {rangeWords === 'Year' && <td>{increases[i].percentage[3]+'%'}</td>}
                         <td>
