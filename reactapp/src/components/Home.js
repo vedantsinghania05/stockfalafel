@@ -3,7 +3,7 @@ import { Container, Card, CardBody, Button, Input, Form, Spinner, Row, Col, Tabl
 import Plot from 'react-plotly.js';
 import { signedInUserMstp, signedInUserMdtp, getUserToken } from '../redux/containers/SignedInUserCtr';
 import { connect } from 'react-redux';
-import { updateUser, getStoredStockData, getUsersCompanies, createShare, getShares, removeShares } from '../nodeserverapi'
+import { updateUser, getStoredStockData, getUsersCompanies, createShare, getShares, removeShares, getPercentageIncreases, getUser } from '../nodeserverapi'
 import errorAlert from './errorAlert.png'
 
 class Home extends Component {
@@ -11,10 +11,11 @@ class Home extends Component {
     super();
     this.state = { result: '', userCompanyList: [], showGraph: false, selectedTicker: undefined, stockChartXValues: [], stockChartYClose: [], stockChartYOpen: [], stockChartYHigh: [], stockChartYLow: [], 
     companiesStr: '', loading: false, percentChange: [], numericChange: [], recentMovingAvgs: [], olderMovingAvgs: [], stockAvgXValues: [], 
-    toggleGraph: false, showDataTable: false, comparisonCompany: '', comparisonXVals: [], comparisonYVals: [], comparisonLabel: '', volume: [], ticker: '', amount: '', purchasedStocks: [], date: '', cost: '' }
+    toggleGraph: false, showDataTable: false, comparisonCompany: '', comparisonXVals: [], comparisonYVals: [], comparisonLabel: '', volume: [], ticker: '', amount: '', purchasedStocks: [], date: '', cost: '', increasesTimeRange: 0 }
   }
 
   componentDidMount = () => {
+    console.log('........', this.state.userCompanyList)
     this.getShare()
     this.getCompaniesForUser()
   }
@@ -31,10 +32,49 @@ class Home extends Component {
 
   onChangeCost = (e) => this.setState({cost: e.target.value})
 
+  setToNextTimeRange = () => {
+    const { increasesTimeRange } = this.state
+
+    this.setState({ increasesTimeRange: (increasesTimeRange+1)%3 })
+    this.getCompaniesForUser()
+  }
+
   getCompaniesForUser = () => {
+    const { increasesTimeRange } = this.state;
+
+    this.setState({ userCompanyList: [] })
+
     getUsersCompanies(getUserToken(),
       response => {
-        this.setState({ userCompanyList: response.data })
+        console.log('initcompanies: ', response.data)
+        //this.props.setUserInfo(response.data)
+        let userCompanyList = []
+        let initCompanyList = response.data
+
+        for (let i in initCompanyList) {
+          getPercentageIncreases(getUserToken(), initCompanyList[i].ticker, [1, 5, 20],
+            response => {
+              const { ticker, id } = initCompanyList[i]
+              const { dollar, percentage } = response.data[increasesTimeRange]
+              console.log('response -> ', response.data)
+
+              let userCompany = { ticker: ticker, id: id, dollar: dollar, percentage: percentage }
+              userCompanyList.push(userCompany)
+
+
+              getUser('me', getUserToken(),
+                response => {
+                  this.props.setUserInfo(response.data)
+                  this.setState({ userCompanyList: userCompanyList, companiesStr: '' })
+                },
+                error => {
+                }
+              )
+            },
+            error => {
+            } 
+          )
+        }
       },
       error => {
         this.setState({result: error.message})
@@ -75,13 +115,19 @@ class Home extends Component {
   }
 
   deleteCompany = (company) => {
+    console.log('userinfo: ', this.props.userInfo)
+    console.log('company >>>>>>>>>>>>', company)
     let usersCompanies = [...this.props.userInfo.companies]
+
+    console.log('FINAL LIST 1: ', usersCompanies)
 
     for (let i in usersCompanies) {
       if (String(usersCompanies[i]) === String(company.ticker)) {
+        console.log('match', String(usersCompanies[i]), String(company.ticker))
         usersCompanies.splice(i, 1)
       }
     }
+    console.log('FINAL LIST 2: ', usersCompanies)
 
     updateUser(this.props.userInfo.id, getUserToken(), this.props.userInfo.email, usersCompanies, false,
       response => {
@@ -230,7 +276,9 @@ class Home extends Component {
   render() {
     let { result, comparisonCompany, userCompanyList, showGraph, selectedTicker, stockChartXValues, stockChartYClose, stockChartYOpen, stockChartYLow, 
     stockChartYHigh, recentMovingAvgs, olderMovingAvgs, companiesStr, loading, percentChange, numericChange, stockAvgXValues, toggleGraph, showDataTable, 
-    comparisonXVals, comparisonYVals, comparisonLabel, volume, ticker, amount, date, cost, purchasedStocks } = this.state
+    comparisonXVals, comparisonYVals, comparisonLabel, volume, ticker, amount, date, cost, purchasedStocks, increasesTimeRange } = this.state
+
+    let rangeWords = ['Last Day', 'Last Week', 'Last Month']
 
     return (
       <Container className='dashboard'>
@@ -251,11 +299,20 @@ class Home extends Component {
                   <Form onSubmit={this.chooseCompanies}>
                     <Input bsSize='sm' name='companiesStr' placeholder='Enter Company Here' value={companiesStr} onChange={this.onChangeCompaniesStr}/>
                   </Form>
+
+                  <Button onClick={()=>this.setToNextTimeRange()}>{rangeWords[increasesTimeRange]}</Button>
                   
-                  {userCompanyList && <Table borderless hover size='sm'>
+                  {userCompanyList && <Table>
+                    <thead>
+                      <th>Ticker</th>
+                      <th>$ Increase</th>
+                      <th>% Increase</th>
+                    </thead>
                     <tbody>
                       {userCompanyList.map((company, i) => <tr key={i}>
                         <td>{company.ticker}</td>
+                        <td>{company.dollar}</td>
+                        <td>{company.percentage+'%'}</td>
                         <td>
                           <Button size='sm' color='primary' disabled={loading} onClick={() => this.sendtoGraph(company)}>{"->"}</Button>
                           <Button size='sm' color='primary' disabled={loading} onClick={() => this.deleteCompany(company)}>x</Button>

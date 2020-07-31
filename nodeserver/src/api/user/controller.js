@@ -40,7 +40,7 @@ export const create = ({ body }, res, next) => {
 import mongoose from 'mongoose'
 
 export const update = ({ params, body, user }, res, next) => {
-  console.log('>>>>>>>>>>>>>>> *** ', body)
+  console.log('>>>>>>>>>>>>>>> *** ', body.companies)
 
   if (body.adding) {
     let initCompany = undefined
@@ -76,6 +76,7 @@ export const update = ({ params, body, user }, res, next) => {
       .then(user => {
         user.email = body.email
         user.companies = body.companies
+        console.log(user.companies)
 
         return user.save()
       })  

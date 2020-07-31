@@ -92,6 +92,18 @@ export const getStoredStockData = (token, ticker, successCbk, errorCbk) => {
   .catch(errorCbk)
 }
 
+export const getPercentageIncreases = (token, ticker, rangeList, successCbk, errorCbk) => {
+  axiosInstance.put(nodeserverUrl + '/stocks/percentages',
+    {
+      access_token: token,
+      ticker: ticker,
+      rangeList: rangeList
+    }
+  )
+  .then(successCbk)
+  .catch(errorCbk)
+}
+
 /**
  * Company
  */
