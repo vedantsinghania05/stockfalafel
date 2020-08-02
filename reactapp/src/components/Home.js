@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Container, Card, CardBody, Button, Input, Form, Spinner, Row, Col, Table, Toast, ToastHeader, InputGroup, Dropdown, DropdownItem, 
-DropdownMenu, DropdownToggle, ButtonGroup } from 'reactstrap'
+DropdownMenu, DropdownToggle, ButtonGroup, InputGroupAddon } from 'reactstrap'
 import Plot from 'react-plotly.js';
 import { signedInUserMstp, signedInUserMdtp, getUserToken } from '../redux/containers/SignedInUserCtr';
 import { connect } from 'react-redux';
@@ -14,8 +14,7 @@ class Home extends Component {
     stockChartYOpen: [], stockChartYHigh: [], stockChartYLow: [], companiesStr: '', loading: false, percentChange: [], numericChange: [], 
     recentMovingAvgs: [], olderMovingAvgs: [], stockAvgXValues: [], toggleGraph: false, showDataTable: false, comparisonCompany: '', 
     comparisonXVals: [], comparisonYVals: [], comparisonLabel: '', volume: [], ticker: '', amount: '', purchasedStocks: [], date: '', cost: '',
-    isOpen: false, interval: 'Day', increases: [], isOpen2: false, rangeWords: 'Day'
-  }
+    isOpen: false, interval: 'Day', increases: [], isOpen2: false, rangeWords: 'Day'}
   }
 
   componentDidMount = () => {
@@ -43,7 +42,6 @@ class Home extends Component {
   }
 
   getCompaniesForUser = () => {
-    this.setState({ userCompanyList: [] })
 
     getUsersCompanies(getUserToken(),
       response => {
@@ -55,21 +53,17 @@ class Home extends Component {
         }
 
         getPercentageIncreases(getUserToken(), temp, [1, 5, 25, 259],
-          response => {
-            this.setState({increases: response.data})
+          response => {          
+            this.setState({ userCompanyList: userCompanyList, companiesStr: '', increases: response.data })
 
             getUser('me', getUserToken(),
               response => {
                 this.props.setUserInfo(response.data)
-                this.setState({ userCompanyList: userCompanyList, companiesStr: '' })
               },
-              error => {
-              }
+              error => this.setState({result: error.message})
             )
           },
-          error => {
-            this.setState({result: error.message})
-          } 
+          error => this.setState({result: error.message})
         )
       },
       error => this.setState({result: error.message})
@@ -284,14 +278,14 @@ class Home extends Component {
 
             {!showGraph && <div>
               <Row>
-                <Col xs={6}> 
+                <Col xs={7}> 
                   <div className="card__title"><h5 className="bold-text">Watchlist</h5></div>
                   <Form onSubmit={this.chooseCompanies}>
                     <Input bsSize='sm' name='companiesStr' placeholder='Enter Company Here' value={companiesStr} onChange={this.onChangeCompaniesStr}/>
                   </Form>
 
-                  <Dropdown isOpen={isOpen2} toggle={this.toggleDropdown2}>
-                    <DropdownToggle size='sm' color='primary' caret>{'Last '+rangeWords}</DropdownToggle>
+                  <Dropdown size='sm' isOpen={isOpen2} toggle={this.toggleDropdown2}>
+                    <DropdownToggle color='primary' caret>{'Last '+rangeWords}</DropdownToggle>
                     <DropdownMenu>
                       {rangeWords !== 'Day' && <DropdownItem onClick={() => this.setToRange(0)}>Last Day</DropdownItem>}
                       {rangeWords !== 'Week' && <DropdownItem onClick={() => this.setToRange(1)}>Last Week</DropdownItem>}
@@ -307,31 +301,34 @@ class Home extends Component {
                         <th>Price</th>
                         <th>Change $</th>
                         <th>Change %</th>
+                        <th>Volume</th>
+
                       </tr>
                     </thead>
                     <tbody>
                       {userCompanyList.map((company, i) => <tr key={i}>
                         <td>{company.ticker}</td>
 
-                        {rangeWords === 'Day' && <td>{'$'+increases[i].currentPrice[0]}</td>}
+                        <td>{'$'+increases[i].currentPrice}</td>
+
                         {rangeWords === 'Day' && <td>{'$'+increases[i].dollar[0]}</td>}
                         {rangeWords === 'Day' && <td>{increases[i].percentage[0]+'%'}</td>}
 
-                        {rangeWords === 'Week' && <td>{'$'+increases[i].currentPrice[1]}</td>}
                         {rangeWords === 'Week' && <td>{'$'+increases[i].dollar[1]}</td>}
                         {rangeWords === 'Week' && <td>{increases[i].percentage[1]+'%'}</td>}
 
-                        {rangeWords === 'Month' && <td>{'$'+increases[i].currentPrice[2]}</td>}
                         {rangeWords === 'Month' && <td>{'$'+increases[i].dollar[2]}</td>}
                         {rangeWords === 'Month' && <td>{increases[i].percentage[2]+'%'}</td>}
 
-                        {rangeWords === 'Year' && <td>{'$'+increases[i].currentPrice[3]}</td>}
                         {rangeWords === 'Year' && <td>{'$'+increases[i].dollar[3]}</td>}
                         {rangeWords === 'Year' && <td>{increases[i].percentage[3]+'%'}</td>}
+
+                        <td>{increases[i].currentVolume}</td>
+
                         <td>
                           <ButtonGroup size='sm'>
                             <Button color='primary' disabled={loading} onClick={() => this.sendtoGraph(company.ticker)}>→</Button>
-                            <Button color='primary' disabled={loading} onClick={() => this.deleteCompany(company)}>x</Button>
+                            <Button color='danger' disabled={loading} onClick={() => this.deleteCompany(company)}>x</Button>
                           </ButtonGroup>
                         </td>
                       </tr>)}
@@ -344,12 +341,12 @@ class Home extends Component {
 
               <div className="card__title"><h5 className="bold-text">Portfolio</h5></div>
               
-              <InputGroup>
-                <Input type='string' placeholder='Ticker' bsSize='sm' value={ticker} onChange={this.onChangeTicker}/>
-                <Input type='number' placeholder='Amount' bsSize='sm' value={amount} onChange={this.onChangeAmount}/>
-                <Input type='date' placeholder='Date Bought' bsSize='sm' value={date} onChange={this.onChangeDate}></Input>
-                <Input type='price' placeholder='Price Per Stock' bsSize='sm' value={cost} onChange={this.onChangeCost}></Input>
-                <Button size='sm' color='primary' onClick={this.getCurrentPrice}>Get Current Price</Button>
+              <InputGroup size='sm'>
+                <Input type='string' placeholder='Ticker' value={ticker} onChange={this.onChangeTicker}/>
+                <Input type='number' placeholder='Amount' value={amount} onChange={this.onChangeAmount}/>
+                <Input type='date' bsSize='sm' value={date} onChange={this.onChangeDate}></Input>
+                <Input type='price' placeholder='Price Per Stock' value={cost} onChange={this.onChangeCost}></Input>
+                <InputGroupAddon addonType="append"><Button size='sm' color='primary' onClick={this.getCurrentPrice}>Get Current Price</Button></InputGroupAddon>
               </InputGroup>
                   
             <Button size='sm' color='primary' onClick={this.submitPurchasedStocks}>Buy</Button>
@@ -367,8 +364,8 @@ class Home extends Component {
                     <th>Gain %</th>
                     <th>
                       Change %
-                      <Dropdown isOpen={isOpen} toggle={this.toggleDropdown}>
-                        <DropdownToggle size='sm' color='primary' caret>{interval}</DropdownToggle>
+                      <Dropdown size='sm' isOpen={isOpen} toggle={this.toggleDropdown}>
+                        <DropdownToggle color='primary' caret>{interval}</DropdownToggle>
                         <DropdownMenu>
                           {interval !== 'Day' && <DropdownItem onClick={() => this.setInt('Day')}>Day</DropdownItem>}
                           {interval !== 'Week' && <DropdownItem onClick={() => this.setInt('Week')}>Week</DropdownItem>}
@@ -395,8 +392,8 @@ class Home extends Component {
                     {interval === 'Year' && <td>{u.changeY + '%'}</td>}
                     <td>
                       <ButtonGroup size='sm'>
-                        <Button color='primary' onClick={() => this.soldStock(u,i)}>x</Button>
                         <Button color='primary' onClick={() => this.sendtoGraph(u.company)}>→</Button>
+                        <Button color='danger' onClick={() => this.soldStock(u,i)}>x</Button>
                       </ButtonGroup>
                     </td>
                   </tr>)}
