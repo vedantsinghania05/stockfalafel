@@ -7,9 +7,10 @@ import MainWrapper from './MainWrapper';
 import SignUp from '../SignUp';
 import SignIn from '../SignIn';
 import Users from '../Users'
-import Home from '../Home';
+import MyStocks from '../MyStocks';
 import SignOut from '../SignOut';
 import Admin from '../Admin'
+import Home from '../Home'
 
 
 const PrivateRoute = ({ component: Component, authenticated, ...rest }) => (
@@ -30,6 +31,7 @@ const wrappedRoutes = () => (
     <Layout />
     <div className="container__wrap">
       <Switch>
+        <Route exact path="/mystocks" component={MyStocks} />
         <Route exact path="/" component={Home} />
         <Route exact path="/admin" component={Admin} />
         <Route exact path="/signout" component={SignOut} />
