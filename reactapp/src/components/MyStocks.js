@@ -446,7 +446,7 @@ class MyStocks extends Component {
 
               {!toggleGraph && <Button size='sm' color='primary' onClick={this.tableToggle}>{showDataTable ? 'Hide Table':'Show Table'}</Button>}
 
-              {showDataTable && <Table borderless hover size='sm'>
+              {showDataTable && <Table style={{fontSize: 14}} borderless hover size='sm'>
                 <thead>
                   <tr>
                     <th>Date</th>

@@ -104,6 +104,14 @@ export const getPercentageIncreases = (token, tickers, rangeList, successCbk, er
   .catch(errorCbk)
 }
 
+export const getHighLow = (token, successCbk, errorCbk) => {
+  axiosInstance.get(nodeserverUrl + '/stocks/',
+    { headers: {Authorization: 'Bearer ' + token } }  
+  )
+  .then(successCbk)
+  .catch(errorCbk)
+}
+
 /**
  * Company
  */

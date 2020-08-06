@@ -93,3 +93,31 @@ export const getPercentageIncreases = ({ body }, res, next) => {
 	})
 	.catch(next)
 }
+
+export const getHighLow = ({ query }, res, next) => {
+	let tickers = []
+	let newHighs = []
+	let newLows = []
+	Company.find()
+		.then(companies => {
+			if (!companies) return next(resInternal('Failed to find companies'))
+			for (let i of companies) tickers.push(i.ticker)
+			return Stock.find()
+		})
+		.then(stocks => {
+			if (!stocks) return next(resInternal('Failed to find stocks'))
+			for (let i in tickers) {
+				let stock = stocks.filter(s => s.company === tickers[i])
+				if (stock) {
+					let prices = []
+					for (let i of stock) prices.push(i.close)
+					if (stock[0].close === Math.max(...prices)) newHighs.push({type: 'New High', price: stock[0].close, percentChange: (((stock[0].close-stock[1].close)/stock[1].close)*100).toFixed(2), ticker: stock[0].company})
+					if (stock[0].close === Math.min(...prices)) newLows.push({type: 'New Low', price: stock[0].close, percentChange: (((stock[0].close-stock[1].close)/stock[1].close)*100).toFixed(2), ticker: stock[0].company})
+
+				}
+			}
+			return resOk(res, [newHighs, newLows])
+
+		})
+		.catch(next)
+}
