@@ -6,6 +6,7 @@ const axios = require('axios')
 
 
 export const getStoredStockData = ({ params }, res, next) => {
+	console.log('getting stock data')
 	Stock.find({ company: params.ticker })
 		.sort('-date')
 		.then(stocks => {
@@ -92,4 +93,62 @@ export const getPercentageIncreases = ({ body }, res, next) => {
 		return resOk(res, increases)
 	})
 	.catch(next)
+}
+
+/*export const getTopGainingStocks = async ({ query }, res, next) => {
+	let gCompanies = []
+	Company.find()
+	.then(companies => {
+		if (!companies) return next(resInternal('Failed to find all companies'))
+		for (let i in companies) {
+			await Stock.find({ company: companies[i].ticker })
+			.sort('-date')
+			.then(stocks => {
+				if (!stocks) return next(resInternal('Failed to find stocks'))
+				console.log('>>>>>>>>>>> for company: ', companies[i].ticker, 'here is the last two vals: ', stocks[0], stocks[1])
+				let percentageIncrease = stocks[0].close - stocks[1].close
+				let updatedCompany = { ticker: companies[i].ticker, id: companies[i].id, pIncrease: percentageIncrease }
+				gCompanies.push(updatedCompany)
+			})
+		}
+		gCompanies.sort(function(a, b){return a-b})
+		console.log('>>>>>>>>>>>>>>', gCompanies)
+	})
+	.catch(next)
+}*/
+
+export const getTopGainingStocks = async ({ query }, res, next) => {
+  let gCompanies = []
+  try {
+    let companies = await Company.find()
+    if (!companies) return next(resInternal('Failed to find all companies'))
+
+    for (let i in companies) {
+      let stocks = await Stock.find({ company: companies[i].ticker }).sort('-date')
+      if (!stocks) continue
+
+      let percentageIncrease = ((stocks[0].close - stocks[1].close) / stocks[1].close) * 100
+      console.log(percentageIncrease, companies[i].ticker)
+      let updatedCompany = { ticker: companies[i].ticker, id: companies[i].id, pIncrease: percentageIncrease.toFixed(5), price: stocks[0].close }
+      gCompanies.push(updatedCompany)
+    }
+
+    gCompanies.sort(function(a, b){return b.pIncrease-a.pIncrease})
+    console.log('>>>>>>>>>>>>>>', gCompanies)
+
+    let length = gCompanies.length
+
+    let topGainers = [gCompanies[0], gCompanies[1], gCompanies[2]]
+    let topLosers = [gCompanies[length-1], gCompanies[length-2], gCompanies[length-3]]
+
+    console.log('>>>>>>>>>> FINAL TOPGAINERS: ', topGainers)
+    console.log('>>>>>>>>>> FINAL TOPLOSERS: ', topLosers)
+    console.log('>>>>>>>>>> FINAL GCOMPANIES: ', gCompanies)
+
+    return resOk(res, { topGainers: topGainers, topLosers: topLosers, companyData: gCompanies })
+
+  } catch(error) {
+    console.log('>>>> ERROR', error)
+  }
+
 }

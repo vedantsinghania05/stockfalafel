@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { password as passwordAuth, master, token } from '../../services/passport'
-import { bulkInsert, getStockData, getStoredStockData, getPercentageIncreases } from './controller'
+import { bulkInsert, getStockData, getStoredStockData, getPercentageIncreases, getTopGainingStocks } from './controller'
 import { schema } from './model'
 export Stock, { schema } from './model'
 
@@ -10,9 +10,13 @@ router.put('/',
 	token({ required: true }),
 	getStockData)
 
-router.get('/:ticker',
+router.get('/info/:ticker',
 	token({ required: true }),
 	getStoredStockData)
+
+router.get('/gainers',
+	token({ required: true }),
+	getTopGainingStocks)
 
 router.put('/percentages', 
 	token({ required: true }),

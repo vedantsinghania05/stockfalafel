@@ -1,13 +1,31 @@
 import React, { Component } from 'react';
 import { Container, Card, CardBody, Spinner, Toast, ToastHeader, Table, Row, Col } from 'reactstrap'
 import { connect } from 'react-redux';
-import { signedInUserMstp, signedInUserMdtp } from '../redux/containers/SignedInUserCtr';
+import { signedInUserMstp, signedInUserMdtp, getUserToken } from '../redux/containers/SignedInUserCtr';
 import errorAlert from './errorAlert.png'
+import { getTopGainingStocks } from '../nodeserverapi'
 
 class Home extends Component {
   constructor() {
     super();
     this.state = { loading: false, result: '', gainHigh: [], loseLow: [] }
+  }
+
+  componentDidMount = () => {
+    this.getTopGainersData()
+  }
+
+  getTopGainersData = () => {
+    console.log('getting top gainers/losers data')
+
+    getTopGainingStocks(getUserToken(), 
+      response => {
+        console.log('YESSSSSSS', response.data)
+      },
+      error => {
+        this.setState({ result: error.message })
+      }
+    )
   }
 
   removeResult = () => this.setState({result: ''})
