@@ -84,8 +84,16 @@ export const getStock = (token, company, successCbk, errorCbk) => {
   .catch(errorCbk);
 }
 
+export const getTopGainingStocks = (token, successCbk, errorCbk) => {
+  axiosInstance.get(nodeserverUrl + '/stocks/gainers',
+    { headers: { Authorization: 'Bearer ' + token } }
+  )
+  .then(successCbk)
+  .catch(errorCbk)
+}
+
 export const getStoredStockData = (token, ticker, successCbk, errorCbk) => {
-  axiosInstance.get(nodeserverUrl + '/stocks/' + ticker,
+  axiosInstance.get(nodeserverUrl + '/stocks/info/' + ticker,
     { headers: { Authorization: 'Bearer ' + token } }
   )
   .then(successCbk)

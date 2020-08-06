@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Container, Card, CardBody, Spinner, Toast, ToastHeader, Table, Row, Col, Button, Form, Input } from 'reactstrap'
 import { connect } from 'react-redux';
 import Plot from 'react-plotly.js';
-import { getHighLow, getStoredStockData } from '../nodeserverapi'
+import { getHighLow, getStoredStockData, getTopGainingStocks } from '../nodeserverapi'
 import { signedInUserMstp, signedInUserMdtp, getUserToken } from '../redux/containers/SignedInUserCtr';
 import errorAlert from './errorAlert.png'
 
@@ -17,6 +17,21 @@ class Home extends Component {
 
   componentDidMount = () => {
     this.highAndLow()
+    this.getTopGainersData()
+  }
+
+  getTopGainersData = () => {
+    let { gainHigh, loseLow } = this.state
+    getTopGainingStocks(getUserToken(), 
+      response => {
+        for (let i of response.data[0]) gainHigh.push(i)
+        for (let b of response.data[1]) loseLow.push(b)
+        this.setState({gainHigh: gainHigh, loseLow: loseLow})
+      },
+      error => {
+        this.setState({ result: error.message })
+      }
+    )
   }
 
   removeResult = () => this.setState({result: ''})

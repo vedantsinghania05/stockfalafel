@@ -6,6 +6,7 @@ const axios = require('axios')
 
 
 export const getStoredStockData = ({ params }, res, next) => {
+	console.log('getting stock data')
 	Stock.find({ company: params.ticker })
 		.sort('-date')
 		.then(stocks => {
@@ -120,4 +121,36 @@ export const getHighLow = ({ query }, res, next) => {
 
 		})
 		.catch(next)
+}
+
+export const getTopGainingStocks = async ({ query }, res, next) => {
+  let gCompanies = []
+  try {
+    let companies = await Company.find()
+    if (!companies) return next(resInternal('Failed to find all companies'))
+
+    for (let i in companies) {
+      let stocks = await Stock.find({ company: companies[i].ticker }).sort('-date')
+      if (!stocks) continue
+
+      let percentageIncrease = ((stocks[0].close - stocks[1].close) / stocks[1].close) * 100
+      let updatedCompany = { ticker: companies[i].ticker, percentChange: percentageIncrease.toFixed(2), price: stocks[0].close }
+      gCompanies.push(updatedCompany)
+    }
+
+    gCompanies.sort(function(a, b){return b.percentChange-a.percentChange})
+
+		let length = gCompanies.length
+		let topGainers = [gCompanies[0], gCompanies[1], gCompanies[2]]
+		let topLosers = [gCompanies[length-1], gCompanies[length-2], gCompanies[length-3]]
+		
+		for (let i of topGainers) i.type = 'Top Gainer'
+		for (let i of topLosers) i.type = 'Top Loser'
+
+    return resOk(res, [topGainers, topLosers])
+
+  } catch(error) {
+    console.log('>>>> ERROR', error)
+  }
+
 }

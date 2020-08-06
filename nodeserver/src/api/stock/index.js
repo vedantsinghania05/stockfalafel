@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { token } from '../../services/passport'
-import { getStockData, getStoredStockData, getPercentageIncreases, getHighLow } from './controller'
+import { getStockData, getStoredStockData, getPercentageIncreases, getHighLow, getTopGainingStocks } from './controller'
 import { schema } from './model'
 export Stock, { schema } from './model'
 
@@ -10,16 +10,20 @@ router.put('/',
 	token({ required: true }),
 	getStockData)
 
-router.get('/:ticker',
+router.get('/info/:ticker',
 	token({ required: true }),
 	getStoredStockData)
+
+router.get('/gainers',
+	token({ required: true }),
+	getTopGainingStocks)
 
 router.put('/percentages', 
 	token({ required: true }),
 	getPercentageIncreases)
 
 router.get('/',
-token({required: true}),
-getHighLow)
+	token({required: true}),
+	getHighLow)
 
 export default router
