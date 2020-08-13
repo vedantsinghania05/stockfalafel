@@ -175,6 +175,8 @@ export const getUnusualVolumes = async ({ query }, res, next) => {
 		let updatedCompany = { id: companies[i].id, ticker: companies[i].ticker, volume: volume }
 		gCompanies.push(updatedCompany)
 	  }
+
+	  gCompanies.sort(function(a, b){return b.volume-a.volume})
   
 	  console.log('GCOMP>>>>>>>', gCompanies)
 	  console.log('TOTALVOL>>>>', totalVol)
@@ -190,7 +192,10 @@ export const getUnusualVolumes = async ({ query }, res, next) => {
 		  }
 	  }
 
-	  return resOk(res, unusualCompanies)
+	  let mostActiveCompanies = [gCompanies[0], gCompanies[1], gCompanies[2]]
+	  console.log('**********', mostActiveCompanies)
+
+	  return resOk(res, {unusual: unusualCompanies, active: mostActiveCompanies})
 
 	} catch(error) {
 	  console.log('>>>> ERROR', error)
