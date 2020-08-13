@@ -12,7 +12,7 @@ class Home extends Component {
     this.state = { loading: false, result: '', gainHigh: [], loseLow: [], showGraph: false, selectedTicker: '', stockChartXValues: [], 
     stockChartYClose: [], stockChartYOpen: [], stockChartYHigh: [], stockChartYLow: [], percentChange: [], numericChange: [], 
     recentMovingAvgs: [], olderMovingAvgs: [], stockAvgXValues: [], volume: [], toggleGraph: false, showDataTable: false, comparisonCompany: '', 
-    comparisonXVals: [], comparisonYVals: [], comparisonLabel: '' }
+    comparisonXVals: [], comparisonYVals: [], comparisonLabel: '', highLow: '' }
   }
 
   componentDidMount = () => {
@@ -65,8 +65,12 @@ class Home extends Component {
     let { stockAvgXValues, stockChartXValues, stockChartYClose, stockChartYHigh, stockChartYOpen, stockChartYLow, volume, numericChange, percentChange } = this.state
     let tempRecentMovingAvgs = []
     let tempOlderMovingAvgs = []
+    let tempPrices = []
     let sortedStockData = [...stockData]    
     sortedStockData.sort((b,a) => new Date(b.date) - new Date(a.date))
+
+    for (let i = 0; i<=253; i++) tempPrices.push(stockData[i].close)
+    this.setState({highLow: Math.max(...tempPrices)+"/"+Math.min(...tempPrices)})
 
     for (let i = 0; i < sortedStockData.length-1; i++) {
       // Calculate 50 day moving average
@@ -156,7 +160,7 @@ class Home extends Component {
   render() {
     let { loading, result, gainHigh, showGraph, loseLow, recentMovingAvgs, olderMovingAvgs, selectedTicker, stockAvgXValues, stockChartXValues, 
     stockChartYClose, stockChartYHigh, stockChartYOpen, stockChartYLow, volume, numericChange, percentChange, 
-    toggleGraph, showDataTable, comparisonXVals, comparisonYVals, comparisonLabel, comparisonCompany } = this.state
+    toggleGraph, showDataTable, comparisonXVals, comparisonYVals, comparisonLabel, comparisonCompany, highLow } = this.state
     return (
       <Container className='dashboard'>
         <Card>
@@ -255,7 +259,10 @@ class Home extends Component {
                 />
               </div>}
 
-              {!toggleGraph && <Button size='sm' color='primary' onClick={this.tableToggle}>{showDataTable ? 'Hide Table':'Show Table'}</Button>}
+              {!toggleGraph && <Row>
+                <Button size='sm' color='primary' onClick={this.tableToggle}>{showDataTable ? 'Hide Table':'Show Table'}</Button>
+                <p>52 Week High/Low: {highLow}</p>
+              </Row>}
 
               {showDataTable && <Table style={{fontSize: 14}} borderless hover size='sm'>
                 <thead>

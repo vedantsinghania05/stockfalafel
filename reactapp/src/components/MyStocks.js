@@ -14,7 +14,7 @@ class MyStocks extends Component {
     stockChartYOpen: [], stockChartYHigh: [], stockChartYLow: [], companiesStr: '', loading: false, percentChange: [], numericChange: [], 
     recentMovingAvgs: [], olderMovingAvgs: [], stockAvgXValues: [], toggleGraph: false, showDataTable: false, comparisonCompany: '', 
     comparisonXVals: [], comparisonYVals: [], comparisonLabel: '', volume: [], ticker: '', amount: '', purchasedStocks: [], date: '', cost: '',
-    isOpen: false, interval: 'Day', increases: [], isOpen2: false, rangeWords: 'Day'}
+    isOpen: false, interval: 'Day', increases: [], isOpen2: false, rangeWords: 'Day', highLow: ''}
   }
 
   componentDidMount = () => {
@@ -127,8 +127,12 @@ class MyStocks extends Component {
     let { stockAvgXValues, stockChartXValues, stockChartYClose, stockChartYHigh, stockChartYOpen, stockChartYLow, volume, numericChange, percentChange } = this.state
     let tempRecentMovingAvgs = []
     let tempOlderMovingAvgs = []
+    let tempPrices = []
     let sortedStockData = [...stockData]    
     sortedStockData.sort((b,a) => new Date(b.date) - new Date(a.date))
+
+    for (let i = 0; i <= 253; i++) tempPrices.push(stockData[i].close)
+    this.setState({highLow: Math.max(...tempPrices)+"/"+Math.min(...tempPrices)})
 
     for (let i = 0; i < sortedStockData.length-1; i++) {
       // Calculate 50 day moving average
@@ -159,7 +163,7 @@ class MyStocks extends Component {
       }
 
       last200Avg = last200Added/addedNoCount200
-      tempOlderMovingAvgs.push(last200Avg.toFixed(2))
+      tempOlderMovingAvgs.push(last200Avg.toFixed(2))      
 
       // Stock Data
       let b = +i+1
@@ -264,7 +268,7 @@ class MyStocks extends Component {
   render() {
     let { result, comparisonCompany, userCompanyList, showGraph, selectedTicker, stockChartXValues, stockChartYClose, stockChartYOpen, stockChartYLow, 
     stockChartYHigh, recentMovingAvgs, olderMovingAvgs, companiesStr, loading, percentChange, numericChange, stockAvgXValues, toggleGraph, showDataTable, 
-    comparisonXVals, comparisonYVals, comparisonLabel, volume, ticker, amount, date, cost, purchasedStocks, increases, isOpen, interval, isOpen2, rangeWords  } = this.state
+    comparisonXVals, comparisonYVals, comparisonLabel, volume, ticker, amount, date, cost, purchasedStocks, increases, isOpen, interval, isOpen2, rangeWords, highLow  } = this.state
 
     return (
       <Container className='dashboard'>
@@ -443,8 +447,10 @@ class MyStocks extends Component {
                   config={{ scrollZoom: true }}
                 />
               </div>}
-
-              {!toggleGraph && <Button size='sm' color='primary' onClick={this.tableToggle}>{showDataTable ? 'Hide Table':'Show Table'}</Button>}
+              {!toggleGraph && <Row>
+                <Button size='sm' color='primary' onClick={this.tableToggle}>{showDataTable ? 'Hide Table':'Show Table'}</Button>
+                <p>52 Week High/Low: {highLow}</p>
+              </Row>}
 
               {showDataTable && <Table style={{fontSize: 14}} borderless hover size='sm'>
                 <thead>
