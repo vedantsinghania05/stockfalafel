@@ -84,6 +84,14 @@ export const getStock = (token, company, successCbk, errorCbk) => {
   .catch(errorCbk);
 }
 
+export const getUnusualVolStocks = (token, successCbk, errorCbk) => {
+  axiosInstance.get(nodeserverUrl + '/stocks/volume',
+    { headers: { Authorization: 'Bearer ' + token } }
+  )
+  .then(successCbk)
+  .catch(errorCbk)
+}
+
 export const getTopGainingStocks = (token, successCbk, errorCbk) => {
   axiosInstance.get(nodeserverUrl + '/stocks/gainers',
     { headers: { Authorization: 'Bearer ' + token } }

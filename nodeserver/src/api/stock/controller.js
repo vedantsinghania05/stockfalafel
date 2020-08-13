@@ -157,3 +157,51 @@ export const getTopGainingStocks = async ({ query }, res, next) => {
   }
 
 }
+
+export const getUnusualVolumes = async ({ query }, res, next) => {
+
+	let gCompanies = []
+	let totalVol = 0
+	let unusualCompanies = []
+
+	try {
+	  let companies = await Company.find()
+	  if (!companies) return next(resInternal('Failed to find all companies'))
+  
+	  for (let i in companies) {
+		let stocks = await Stock.find({ company: companies[i].ticker }).sort('-date')
+		if (!stocks) continue
+  
+		let volume = stocks[0].volume
+		totalVol = totalVol + volume
+
+		let updatedCompany = { id: companies[i].id, ticker: companies[i].ticker, volume: volume }
+		gCompanies.push(updatedCompany)
+	  }
+
+	  gCompanies.sort(function(a, b){return b.volume-a.volume})
+  
+	  console.log('GCOMP>>>>>>>', gCompanies)
+	  console.log('TOTALVOL>>>>', totalVol)
+
+	  let volAvg = (totalVol / gCompanies.length).toFixed(0)
+	  console.log('VOLAVG>>>>>>>', volAvg)
+	  console.log('greater: ', volAvg*1.5, 'lesser: ', volAvg*0.5)
+
+	  for (let company of gCompanies) {
+		  if (company.volume > volAvg*1.5 || company.volume < volAvg*0.5) {
+			  console.log('UNUSUAL: ', company.ticker, company.volume)
+			  unusualCompanies.push(company)
+		  }
+	  }
+
+	  let mostActiveCompanies = [gCompanies[0], gCompanies[1], gCompanies[2]]
+	  console.log('**********', mostActiveCompanies)
+
+	  return resOk(res, {unusual: unusualCompanies, active: mostActiveCompanies})
+
+	} catch(error) {
+	  console.log('>>>> ERROR', error)
+	}
+
+}
