@@ -52,7 +52,7 @@ export const update = ({ params, body, user }, res, next) => {
         return Stock.find({ company: company.ticker })
       })
       .then(stocks => {
-        if (stocks.length === 0) return resOk(res, 'no data for company')
+        if (stocks.length === 0 || !stocks) return resOk(res, 'no data for company')
         gCompanies = initCompany
         return User.findById(user.id)
       })

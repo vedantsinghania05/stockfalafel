@@ -161,8 +161,8 @@ export const getTopGainingStocks = async ({ query }, res, next) => {
 export const getUnusualVolumes = async ({ query }, res, next) => {
 
 	let gCompanies = []
-	let totalVol = 0
 	let unusualCompanies = []
+	let standardDev = -1
 
 	try {
 	  let companies = await Company.find()
@@ -171,25 +171,51 @@ export const getUnusualVolumes = async ({ query }, res, next) => {
 	  for (let i in companies) {
 		let stocks = await Stock.find({ company: companies[i].ticker }).sort('-date')
 		if (!stocks) continue
-  
-		let volume = stocks[0].volume
-		totalVol = totalVol + volume
 
-		let updatedCompany = { id: companies[i].id, ticker: companies[i].ticker, volume: volume }
+		let lastYear = []
+		for (let i = 0; i < 253; i++) {
+			//console.log(stocks[i])
+			if (!stocks[i]) console.log('UNDEFINED: ')
+			lastYear.push(stocks[i])
+		}
+		
+
+		//console.log('>>>>>> stocks length: ', stocks.length)
+		//console.log('>>>>>> lastYear length: ', lastYear.length)
+  
+		let volume = lastYear[0].volume
+
+		let companyVolTotal = 0
+		let companyVolAvg = -1
+		let companyDevTotal = 0
+
+		console.log('IMPORTANT: ', lastYear)
+
+		for (let stock of lastYear) {
+			companyVolTotal = companyVolTotal + stock.volume
+		}
+		console.log('Total:  ', companyVolTotal)
+		companyVolAvg = (companyVolTotal / 20).toFixed(0)
+
+		for (let stock of lastYear) {
+			//console.log('deviation: ', Math.abs(stock.volume-companyVolAvg))
+			companyDevTotal = companyDevTotal + Math.abs(stock.volume-companyVolAvg)
+		}
+		standardDev = (companyDevTotal / 20).toFixed(0)
+		
+		console.log('>>>>>', companies[i].ticker, standardDev)
+
+		let updatedCompany = { id: companies[i].id, ticker: companies[i].ticker, volume: volume, volumeAvg: companyVolAvg, standardDev: standardDev }
 		gCompanies.push(updatedCompany)
 	  }
 
 	  gCompanies.sort(function(a, b){return b.volume-a.volume})
   
-	  console.log('GCOMP>>>>>>>', gCompanies)
-	  console.log('TOTALVOL>>>>', totalVol)
-
-	  let volAvg = (totalVol / gCompanies.length).toFixed(0)
-	  console.log('VOLAVG>>>>>>>', volAvg)
-	  console.log('greater: ', volAvg*1.5, 'lesser: ', volAvg*0.5)
+	  //console.log('GCOMP>>>>>>>', gCompanies)
 
 	  for (let company of gCompanies) {
-		  if (company.volume > volAvg*1.5 || company.volume < volAvg*0.5) {
+		  console.log('>>>>>>>>>>>> volume: ', company.volume, ' Upper Limit: ', Number(company.volumeAvg)+Number(standardDev*1.5), ' Lower Limit: ', Number(company.volumeAvg)-Number(standardDev*1.5))
+		  if (Number(company.volume) > Number(company.volumeAvg)+Number(standardDev*1.5) || Number(company.volume) < Number(company.volumeAvg)-Number(standardDev*1.5)) {
 			  console.log('UNUSUAL: ', company.ticker, company.volume)
 			  unusualCompanies.push(company)
 		  }
@@ -197,6 +223,7 @@ export const getUnusualVolumes = async ({ query }, res, next) => {
 
 	  let mostActiveCompanies = [gCompanies[0], gCompanies[1], gCompanies[2]]
 	  console.log('**********', mostActiveCompanies)
+	  console.log('%%%%%%%%%%', unusualCompanies)
 
 	  return resOk(res, {unusual: unusualCompanies, active: mostActiveCompanies})
 
