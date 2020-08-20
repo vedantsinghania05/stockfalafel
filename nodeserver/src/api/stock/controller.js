@@ -175,7 +175,7 @@ export const getUnusualVolumes = async ({ query }, res, next) => {
 		let lastYear = []
 		for (let i = 0; i < 253; i++) {
 			//console.log(stocks[i])
-			if (!stocks[i]) console.log('UNDEFINED: ')
+			if (!stocks[i]) break
 			lastYear.push(stocks[i])
 		}
 		
@@ -205,7 +205,8 @@ export const getUnusualVolumes = async ({ query }, res, next) => {
 		
 		console.log('>>>>>', companies[i].ticker, standardDev)
 
-		let updatedCompany = { id: companies[i].id, ticker: companies[i].ticker, volume: volume, volumeAvg: companyVolAvg, standardDev: standardDev }
+		let updatedCompany = { id: companies[i].id, ticker: companies[i].ticker, volume: volume, 
+			volumeAvg: companyVolAvg, standardDev: standardDev, price: lastYear[0].close, type: 'Unusual Volume', percentChange: (((lastYear[0].close - lastYear[1].close)/lastYear[1].close)*100).toFixed(2) }
 		gCompanies.push(updatedCompany)
 	  }
 
@@ -221,11 +222,12 @@ export const getUnusualVolumes = async ({ query }, res, next) => {
 		  }
 	  }
 
-	  let mostActiveCompanies = [gCompanies[0], gCompanies[1], gCompanies[2]]
+		let mostActiveCompanies = [gCompanies[0], gCompanies[1], gCompanies[2]]
+		// for (let i of mostActiveCompanies) i.type = 'Most Active'
 	  console.log('**********', mostActiveCompanies)
 	  console.log('%%%%%%%%%%', unusualCompanies)
 
-	  return resOk(res, {unusual: unusualCompanies, active: mostActiveCompanies})
+	  return resOk(res, [unusualCompanies, mostActiveCompanies])
 
 	} catch(error) {
 	  console.log('>>>> ERROR', error)

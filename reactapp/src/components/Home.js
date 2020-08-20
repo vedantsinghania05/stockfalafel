@@ -12,7 +12,7 @@ class Home extends Component {
     this.state = { loading: false, result: '', gainHigh: [], loseLow: [], showGraph: false, selectedTicker: '', stockChartXValues: [], 
     stockChartYClose: [], stockChartYOpen: [], stockChartYHigh: [], stockChartYLow: [], percentChange: [], numericChange: [], 
     recentMovingAvgs: [], olderMovingAvgs: [], stockAvgXValues: [], volume: [], toggleGraph: false, showDataTable: false, comparisonCompany: '', 
-    comparisonXVals: [], comparisonYVals: [], comparisonLabel: '', highLow: '' }
+    comparisonXVals: [], comparisonYVals: [], comparisonLabel: '', highLow: '', volumeInd: [] }
   }
 
   componentDidMount = () => {
@@ -22,10 +22,17 @@ class Home extends Component {
   }
 
   getUnusualVol = () => {
-
+    let {volumeInd} = this.state
     getUnusualVolStocks(getUserToken(),
       response => {
+
+        for (let i of response.data[0]) volumeInd.push(i)
+        for (let b of response.data[1]) {
+          b.type ='Most Active'
+          volumeInd.push(b)
+        }
         console.log(response.data)
+        this.setState({ volumeInd: volumeInd })
       },
       error => {
         this.setState({ result: error.message })
@@ -174,7 +181,7 @@ class Home extends Component {
   render() {
     let { loading, result, gainHigh, showGraph, loseLow, recentMovingAvgs, olderMovingAvgs, selectedTicker, stockAvgXValues, stockChartXValues, 
     stockChartYClose, stockChartYHigh, stockChartYOpen, stockChartYLow, volume, numericChange, percentChange, 
-    toggleGraph, showDataTable, comparisonXVals, comparisonYVals, comparisonLabel, comparisonCompany, highLow } = this.state
+    toggleGraph, showDataTable, comparisonXVals, comparisonYVals, comparisonLabel, comparisonCompany, highLow, volumeInd } = this.state
     return (
       <Container className='dashboard'>
         <Card>
@@ -187,48 +194,69 @@ class Home extends Component {
             </Toast>}
             {loading && <Spinner size='sm' color='primary'></Spinner>}
 
-            {!showGraph && <Row>
-              <Col xs={5}>
-                {gainHigh && <Table style={{fontSize: 14}} hover borderless size='sm'>
-                  <thead>
-                    <tr>
-                      <th>Ticker</th>
-                      <th>Price</th>
-                      <th>Change %</th>
-                      <th>Type</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {gainHigh.map((u, i) => <tr onClick={() => this.sendtoGraph(u.ticker)} key={i}>
-                      <td>{u.ticker}</td>
-                      <td>{'$'+u.price}</td>
-                      <td>{u.percentChange+'%'}</td>
-                      <td>{u.type}</td>
-                    </tr>)}
-                  </tbody>
-                </Table>}
-              </Col>
-              <Col xs={5}>
-                {loseLow && <Table style={{fontSize: 14}} hover borderless size='sm'>
-                  <thead>
-                    <tr>
-                      <th>Ticker</th>
-                      <th>Price</th>
-                      <th>Change %</th>
-                      <th>Type</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {loseLow.map((u, i) => <tr onClick={() => this.sendtoGraph(u.ticker)} key={i}>
-                      <td>{u.ticker}</td>
-                      <td>{'$'+u.price}</td>
-                      <td>{u.percentChange+'%'}</td>
-                      <td>{u.type}</td>
-                    </tr>)}
-                  </tbody>
-                </Table>}
-              </Col>
-            </Row>}
+            {!showGraph && <div>
+                <Row>
+                <Col xs={5}>
+                  {gainHigh && <Table style={{fontSize: 14}} hover borderless size='sm'>
+                    <thead>
+                      <tr>
+                        <th>Ticker</th>
+                        <th>Price</th>
+                        <th>Change %</th>
+                        <th>Type</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {gainHigh.map((u, i) => <tr onClick={() => this.sendtoGraph(u.ticker)} key={i}>
+                        <td>{u.ticker}</td>
+                        <td>{'$'+u.price}</td>
+                        <td>{u.percentChange+'%'}</td>
+                        <td>{u.type}</td>
+                      </tr>)}
+                    </tbody>
+                  </Table>}
+                </Col>
+                <Col xs={5}>
+                  {loseLow && <Table style={{fontSize: 14}} hover borderless size='sm'>
+                    <thead>
+                      <tr>
+                        <th>Ticker</th>
+                        <th>Price</th>
+                        <th>Change %</th>
+                        <th>Type</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {loseLow.map((u, i) => <tr onClick={() => this.sendtoGraph(u.ticker)} key={i}>
+                        <td>{u.ticker}</td>
+                        <td>{'$'+u.price}</td>
+                        <td>{u.percentChange+'%'}</td>
+                        <td>{u.type}</td>
+                      </tr>)}
+                    </tbody>
+                  </Table>}
+                </Col>
+              </Row>
+              {volumeInd && <Table style={{fontSize: 14}} hover borderless size='sm'>
+                    <thead>
+                      <tr>
+                        <th>Ticker</th>
+                        <th>Price</th>
+                        <th>Change %</th>
+                        <th>Type</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {volumeInd.map((u, i) => <tr onClick={() => this.sendtoGraph(u.ticker)} key={i}>
+                        <td>{u.ticker}</td>
+                        <td>{'$'+u.price}</td>
+                        <td>{u.percentChange+'%'}</td>
+                        <td>{u.type}</td>
+                      </tr>)}
+                    </tbody>
+                  </Table>}
+
+            </div>}
               
             {showGraph && <div>
               <Button size='sm' color='primary' onClick={this.back}>{"<-"}</Button>
