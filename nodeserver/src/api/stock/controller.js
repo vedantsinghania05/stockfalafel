@@ -195,13 +195,13 @@ export const getUnusualVolumes = async ({ query }, res, next) => {
 			companyVolTotal = companyVolTotal + stock.volume
 		}
 		console.log('Total:  ', companyVolTotal)
-		companyVolAvg = (companyVolTotal / 20).toFixed(0)
+		companyVolAvg = (companyVolTotal / 253).toFixed(0)
 
 		for (let stock of lastYear) {
 			//console.log('deviation: ', Math.abs(stock.volume-companyVolAvg))
 			companyDevTotal = companyDevTotal + Math.abs(stock.volume-companyVolAvg)
 		}
-		standardDev = (companyDevTotal / 20).toFixed(0)
+		standardDev = (companyDevTotal / 253).toFixed(0)
 		
 		console.log('>>>>>', companies[i].ticker, standardDev)
 
