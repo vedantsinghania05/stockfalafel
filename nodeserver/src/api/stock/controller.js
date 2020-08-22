@@ -174,63 +174,35 @@ export const getUnusualVolumes = async ({ query }, res, next) => {
 
 		let lastYear = []
 		for (let i = 0; i < 253; i++) {
-			//console.log(stocks[i])
 			if (!stocks[i]) break
 			lastYear.push(stocks[i])
 		}
-		
-
-		//console.log('>>>>>> stocks length: ', stocks.length)
-		//console.log('>>>>>> lastYear length: ', lastYear.length)
   
 		let volume = lastYear[0].volume
-
 		let companyVolTotal = 0
 		let companyVolAvg = -1
 		let companyDevTotal = 0
 
-		console.log('IMPORTANT: ', lastYear)
+		for (let stock of lastYear) companyVolTotal = companyVolTotal + stock.volume
 
-		for (let stock of lastYear) {
-			companyVolTotal = companyVolTotal + stock.volume
-		}
-		console.log('Total:  ', companyVolTotal)
-		companyVolAvg = (companyVolTotal / 253).toFixed(0)
+		companyVolAvg = (companyVolTotal/lastYear.length).toFixed(0)
 
-		for (let stock of lastYear) {
-			//console.log('deviation: ', Math.abs(stock.volume-companyVolAvg))
-			companyDevTotal = companyDevTotal + Math.abs(stock.volume-companyVolAvg)
-		}
-		standardDev = (companyDevTotal / 253).toFixed(0)
+		for (let stock of lastYear) companyDevTotal = companyDevTotal + Math.abs(stock.volume-companyVolAvg)
 		
-		console.log('>>>>>', companies[i].ticker, standardDev)
-
-		let updatedCompany = { id: companies[i].id, ticker: companies[i].ticker, volume: volume, 
-			volumeAvg: companyVolAvg, standardDev: standardDev, price: lastYear[0].close, type: 'Unusual Volume', percentChange: (((lastYear[0].close - lastYear[1].close)/lastYear[1].close)*100).toFixed(2) }
+		standardDev = (companyDevTotal/lastYear.length).toFixed(0)
+		
+		let updatedCompany = { id: companies[i].id, ticker: companies[i].ticker, volume: volume, volumeAvg: companyVolAvg, standardDev: standardDev, price: lastYear[0].close, type: 'Unusual Volume', 
+		percentChange: (((lastYear[0].close - lastYear[1].close)/lastYear[1].close)*100).toFixed(2) }
 		gCompanies.push(updatedCompany)
 	  }
 
 	  gCompanies.sort(function(a, b){return b.volume-a.volume})
   
-	  //console.log('GCOMP>>>>>>>', gCompanies)
+	  for (let company of gCompanies) if (Number(company.volume) > Number(company.volumeAvg)+Number(standardDev*1.5)) unusualCompanies.push(company)
 
-	  for (let company of gCompanies) {
-		  console.log('>>>>>>>>>>>> volume: ', company.volume, ' Upper Limit: ', Number(company.volumeAvg)+Number(standardDev*1.5), ' Lower Limit: ', Number(company.volumeAvg)-Number(standardDev*1.5))
-		  if (Number(company.volume) > Number(company.volumeAvg)+Number(standardDev*1.5) || Number(company.volume) < Number(company.volumeAvg)-Number(standardDev*1.5)) {
-			  console.log('UNUSUAL: ', company.ticker, company.volume)
-			  unusualCompanies.push(company)
-		  }
-	  }
-
-		let mostActiveCompanies = [gCompanies[0], gCompanies[1], gCompanies[2]]
-		// for (let i of mostActiveCompanies) i.type = 'Most Active'
-	  console.log('**********', mostActiveCompanies)
-	  console.log('%%%%%%%%%%', unusualCompanies)
-
-	  return resOk(res, [unusualCompanies, mostActiveCompanies])
+	  return resOk(res, [unusualCompanies, [gCompanies[0], gCompanies[1], gCompanies[2]]])
 
 	} catch(error) {
-	  console.log('>>>> ERROR', error)
+		console.log('>>>> ERROR', error)
 	}
-
 }
