@@ -16,7 +16,7 @@ class Home extends Component {
   }
 
   componentDidMount = () => {
-    this.getUnusualVol()
+    this.getTechnicalIndicators()
   }
 
   formatTechInds = (dataType, list, type) => {
@@ -26,7 +26,7 @@ class Home extends Component {
     }
   }
 
-  getUnusualVol = () => {
+  getTechnicalIndicators = () => {
     let {gainHigh, loseLow, volumeInd} = this.state
     getTechInds(getUserToken(),
       response => {
