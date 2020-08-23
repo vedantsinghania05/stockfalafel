@@ -84,16 +84,8 @@ export const getStock = (token, company, successCbk, errorCbk) => {
   .catch(errorCbk);
 }
 
-export const getUnusualVolStocks = (token, successCbk, errorCbk) => {
+export const getTechInds = (token, successCbk, errorCbk) => {
   axiosInstance.get(nodeserverUrl + '/stocks/volume',
-    { headers: { Authorization: 'Bearer ' + token } }
-  )
-  .then(successCbk)
-  .catch(errorCbk)
-}
-
-export const getTopGainingStocks = (token, successCbk, errorCbk) => {
-  axiosInstance.get(nodeserverUrl + '/stocks/gainers',
     { headers: { Authorization: 'Bearer ' + token } }
   )
   .then(successCbk)
@@ -115,14 +107,6 @@ export const getPercentageIncreases = (token, tickers, rangeList, successCbk, er
       tickers: tickers,
       rangeList: rangeList
     }
-  )
-  .then(successCbk)
-  .catch(errorCbk)
-}
-
-export const getHighLow = (token, successCbk, errorCbk) => {
-  axiosInstance.get(nodeserverUrl + '/stocks/',
-    { headers: {Authorization: 'Bearer ' + token } }  
   )
   .then(successCbk)
   .catch(errorCbk)

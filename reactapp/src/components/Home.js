@@ -2,72 +2,51 @@ import React, { Component } from 'react';
 import { Container, Card, CardBody, Spinner, Toast, ToastHeader, Table, Row, Col, Button, Form, Input } from 'reactstrap'
 import { connect } from 'react-redux';
 import Plot from 'react-plotly.js';
-import { getHighLow, getStoredStockData, getTopGainingStocks, getUnusualVolStocks } from '../nodeserverapi'
+import { getTechInds, getStoredStockData } from '../nodeserverapi'
 import { signedInUserMstp, signedInUserMdtp, getUserToken } from '../redux/containers/SignedInUserCtr';
 import errorAlert from './errorAlert.png'
 
 class Home extends Component {
   constructor() {
     super();
-    this.state = { loading: false, result: '', gainHigh: [], loseLow: [], showGraph: false, selectedTicker: '', stockChartXValues: [], 
+    this.state = { loading: false, result: '', showGraph: false, selectedTicker: '', stockChartXValues: [], 
     stockChartYClose: [], stockChartYOpen: [], stockChartYHigh: [], stockChartYLow: [], percentChange: [], numericChange: [], 
     recentMovingAvgs: [], olderMovingAvgs: [], stockAvgXValues: [], volume: [], toggleGraph: false, showDataTable: false, comparisonCompany: '', 
-    comparisonXVals: [], comparisonYVals: [], comparisonLabel: '', highLow: '', volumeInd: [] }
+    comparisonXVals: [], comparisonYVals: [], comparisonLabel: '', highLow: '', volumeInd: [], gainHigh: [], loseLow: [] }
   }
 
   componentDidMount = () => {
-    this.highAndLow()
-    this.getTopGainersData()
     this.getUnusualVol()
   }
 
-  getUnusualVol = () => {
-    let {volumeInd} = this.state
-    getUnusualVolStocks(getUserToken(),
-      response => {
-
-        for (let i of response.data[0]) volumeInd.push(i)
-        for (let b of response.data[1]) {
-          b.type ='Most Active'
-          volumeInd.push(b)
-        }
-        console.log(response.data)
-        this.setState({ volumeInd: volumeInd })
-      },
-      error => {
-        this.setState({ result: error.message })
-      }
-    )
-
+  formatTechInds = (dataType, list, type) => {
+    for (let i of dataType) {
+      list.push(i)
+      i.type = type
+    }
   }
 
-  getTopGainersData = () => {
-    let { gainHigh, loseLow } = this.state
-    getTopGainingStocks(getUserToken(), 
+  getUnusualVol = () => {
+    let {gainHigh, loseLow, volumeInd} = this.state
+    getTechInds(getUserToken(),
       response => {
-        for (let i of response.data[0]) gainHigh.push(i)
-        for (let b of response.data[1]) loseLow.push(b)
-        this.setState({gainHigh: gainHigh, loseLow: loseLow})
+        console.log(response.data)
+        this.formatTechInds(response.data.gainers, gainHigh, 'Top Gainer')
+        this.formatTechInds(response.data.highs, gainHigh, 'New High')
+        this.formatTechInds(response.data.losers, loseLow, 'Top Loser')
+        this.formatTechInds(response.data.lows, loseLow, 'New Low')
+        this.formatTechInds(response.data.unusual, volumeInd, 'Unusual Volume')
+        this.formatTechInds(response.data.active, volumeInd, 'Most Active')
+        this.setState({gainHigh: gainHigh, loseLow: loseLow, volumeInd: volumeInd})
       },
       error => {
         this.setState({ result: error.message })
       }
     )
+
   }
 
   removeResult = () => this.setState({result: ''})
-
-  highAndLow = () => {
-    let { gainHigh, loseLow } = this.state
-    getHighLow(getUserToken(),
-      response => {
-        for (let i of response.data[0]) gainHigh.push(i)
-        for (let b of response.data[1]) loseLow.push(b)
-        this.setState({gainHigh: gainHigh, loseLow: loseLow})
-      },
-      error => this.setState({result: error.message})
-    )
-  }
 
   sendtoGraph = (company) => {
     this.setState({loading: true})
@@ -197,7 +176,7 @@ class Home extends Component {
             {!showGraph && <div>
                 <Row>
                 <Col xs={5}>
-                  {gainHigh && <Table style={{fontSize: 14}} hover borderless size='sm'>
+                  {gainHigh && <Table style={{fontSize: 13}} hover borderless size='sm'>
                     <thead>
                       <tr>
                         <th>Ticker</th>
@@ -217,7 +196,7 @@ class Home extends Component {
                   </Table>}
                 </Col>
                 <Col xs={5}>
-                  {loseLow && <Table style={{fontSize: 14}} hover borderless size='sm'>
+                  {loseLow && <Table style={{fontSize: 13}} hover borderless size='sm'>
                     <thead>
                       <tr>
                         <th>Ticker</th>
@@ -237,7 +216,7 @@ class Home extends Component {
                   </Table>}
                 </Col>
               </Row>
-              {volumeInd && <Table style={{fontSize: 14}} hover borderless size='sm'>
+              {volumeInd && <Table style={{fontSize: 13}} hover borderless size='sm'>
                     <thead>
                       <tr>
                         <th>Ticker</th>

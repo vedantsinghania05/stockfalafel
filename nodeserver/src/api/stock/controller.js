@@ -95,73 +95,13 @@ export const getPercentageIncreases = ({ body }, res, next) => {
 	.catch(next)
 }
 
-export const getHighLow = ({ query }, res, next) => {
-	let tickers = []
-	let newHighs = []
-	let newLows = []
-	Company.find()
-		.then(companies => {
-			if (!companies) return next(resInternal('Failed to find companies'))
-			for (let i of companies) tickers.push(i.ticker)
-			return Stock.find()
-		})
-		.then(stocks => {
-			if (!stocks) return next(resInternal('Failed to find stocks'))
-			for (let i in tickers) {
-				let stock = stocks.filter(s => s.company === tickers[i])
-				if (stock) {
-					let prices = []
-					for (let i of stock) {
-						prices.push(i.close)
-						if (i === 253) break
-					}
-					if (stock[0].close === Math.max(...prices)) newHighs.push({type: 'New High', price: stock[0].close, percentChange: (((stock[0].close-stock[1].close)/stock[1].close)*100).toFixed(2), ticker: stock[0].company})
-					if (stock[0].close === Math.min(...prices)) newLows.push({type: 'New Low', price: stock[0].close, percentChange: (((stock[0].close-stock[1].close)/stock[1].close)*100).toFixed(2), ticker: stock[0].company})
-
-				}
-			}
-			return resOk(res, [newHighs, newLows])
-
-		})
-		.catch(next)
-}
-
-export const getTopGainingStocks = async ({ query }, res, next) => {
-  let gCompanies = []
-  try {
-    let companies = await Company.find()
-    if (!companies) return next(resInternal('Failed to find all companies'))
-
-    for (let i in companies) {
-      let stocks = await Stock.find({ company: companies[i].ticker }).sort('-date')
-      if (!stocks) continue
-
-      let percentageIncrease = ((stocks[0].close - stocks[1].close) / stocks[1].close) * 100
-      let updatedCompany = { ticker: companies[i].ticker, percentChange: percentageIncrease.toFixed(2), price: stocks[0].close }
-      gCompanies.push(updatedCompany)
-    }
-
-    gCompanies.sort(function(a, b){return b.percentChange-a.percentChange})
-
-		let length = gCompanies.length
-		let topGainers = [gCompanies[0], gCompanies[1], gCompanies[2]]
-		let topLosers = [gCompanies[length-1], gCompanies[length-2], gCompanies[length-3]]
-		
-		for (let i of topGainers) i.type = 'Top Gainer'
-		for (let i of topLosers) i.type = 'Top Loser'
-
-    return resOk(res, [topGainers, topLosers])
-
-  } catch(error) {
-    console.log('>>>> ERROR', error)
-  }
-
-}
-
-export const getUnusualVolumes = async ({ query }, res, next) => {
+export const getTechInds = async ({ query }, res, next) => {
 
 	let gCompanies = []
+	let topCompanies = []
 	let unusualCompanies = []
+	let newHighs = []
+	let newLows = []
 	let standardDev = -1
 
 	try {
@@ -173,34 +113,45 @@ export const getUnusualVolumes = async ({ query }, res, next) => {
 		if (!stocks) continue
 
 		let lastYear = []
+		let prices = []
 		for (let i = 0; i < 253; i++) {
 			if (!stocks[i]) break
 			lastYear.push(stocks[i])
+			prices.push(stocks[i].close)
 		}
-  
+		
+		//volume stuff
 		let volume = lastYear[0].volume
 		let companyVolTotal = 0
 		let companyVolAvg = -1
 		let companyDevTotal = 0
 
 		for (let stock of lastYear) companyVolTotal = companyVolTotal + stock.volume
-
 		companyVolAvg = (companyVolTotal/lastYear.length).toFixed(0)
-
 		for (let stock of lastYear) companyDevTotal = companyDevTotal + Math.abs(stock.volume-companyVolAvg)
-		
 		standardDev = (companyDevTotal/lastYear.length).toFixed(0)
+
+		//new highs/lows
+		if (stocks[0].close === Math.max(...prices)) newHighs.push({price: lastYear[0].close, percentChange: (((lastYear[0].close-lastYear[1].close)/lastYear[1].close)*100).toFixed(2), ticker: lastYear[0].company})
+		if (stocks[0].close === Math.min(...prices)) newLows.push({price: lastYear[0].close, percentChange: (((lastYear[0].close-lastYear[1].close)/lastYear[1].close)*100).toFixed(2), ticker: lastYear[0].company})
 		
-		let updatedCompany = { id: companies[i].id, ticker: companies[i].ticker, volume: volume, volumeAvg: companyVolAvg, standardDev: standardDev, price: lastYear[0].close, type: 'Unusual Volume', 
+		//company formatting
+		let updatedCompany = { id: companies[i].id, ticker: companies[i].ticker, volume: volume, volumeAvg: companyVolAvg, standardDev: standardDev, price: lastYear[0].close, 
 		percentChange: (((lastYear[0].close - lastYear[1].close)/lastYear[1].close)*100).toFixed(2) }
 		gCompanies.push(updatedCompany)
-	  }
+		topCompanies.push(updatedCompany)
+		}
+		
+		//top stocks
+		let length = topCompanies.length
+		let topGainers = [topCompanies[0], topCompanies[1], topCompanies[2]]
+		let topLosers = [topCompanies[length-1], topCompanies[length-2], topCompanies[length-3]]
 
+		//volume stuff again
 	  gCompanies.sort(function(a, b){return b.volume-a.volume})
-  
 	  for (let company of gCompanies) if (Number(company.volume) > Number(company.volumeAvg)+Number(standardDev*1.5)) unusualCompanies.push(company)
 
-	  return resOk(res, [unusualCompanies, [gCompanies[0], gCompanies[1], gCompanies[2]]])
+	  return resOk(res, {unusual: unusualCompanies, active: [gCompanies[0], gCompanies[1], gCompanies[2]], gainers: topGainers, losers: topLosers, highs: newHighs, lows: newLows})
 
 	} catch(error) {
 		console.log('>>>> ERROR', error)
