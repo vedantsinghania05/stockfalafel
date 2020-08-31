@@ -102,6 +102,7 @@ export const getTechInds = async ({ query }, res, next) => {
 	let unusualCompanies = []
 	let newHighs = []
 	let newLows = []
+	let volatile = []
 	let standardDev = -1
 
 	try {
@@ -137,9 +138,10 @@ export const getTechInds = async ({ query }, res, next) => {
 		
 		//company formatting
 		let updatedCompany = { id: companies[i].id, ticker: companies[i].ticker, volume: volume, volumeAvg: companyVolAvg, standardDev: standardDev, price: lastYear[0].close, 
-		percentChange: (((lastYear[0].close - lastYear[1].close)/lastYear[1].close)*100).toFixed(2) }
+		percentChange: (((lastYear[0].close - lastYear[1].close)/lastYear[1].close)*100).toFixed(2), high: lastYear[0].high, low: lastYear[0].low }
 		gCompanies.push(updatedCompany)
 		topCompanies.push(updatedCompany)
+		volatile.push(updatedCompany)
 		}
 		
 		//top stocks
@@ -149,9 +151,12 @@ export const getTechInds = async ({ query }, res, next) => {
 
 		//volume stuff again
 	  gCompanies.sort(function(a, b){return b.volume-a.volume})
-	  for (let company of gCompanies) if (Number(company.volume) > Number(company.volumeAvg)+Number(standardDev*1.5)) unusualCompanies.push(company)
+		for (let company of gCompanies) if (Number(company.volume) > Number(company.volumeAvg)+Number(standardDev*1.5)) unusualCompanies.push(company)
 
-	  return resOk(res, {unusual: unusualCompanies, active: [gCompanies[0], gCompanies[1], gCompanies[2]], gainers: topGainers, losers: topLosers, highs: newHighs, lows: newLows})
+		//most volatile stuff
+		volatile.sort(function(a, b) {return (b.high-b.low)-(a.high-a.low)})
+
+	  return resOk(res, {unusual: unusualCompanies, active: [gCompanies[0], gCompanies[1], gCompanies[2]], gainers: topGainers, losers: topLosers, highs: newHighs, lows: newLows, volatile: [volatile[0], volatile[1], volatile[2] ]})
 
 	} catch(error) {
 		console.log('>>>> ERROR', error)

@@ -37,6 +37,7 @@ class Home extends Component {
         this.formatTechInds(response.data.lows, loseLow, 'New Low')
         this.formatTechInds(response.data.unusual, volumeInd, 'Unusual Volume')
         this.formatTechInds(response.data.active, volumeInd, 'Most Active')
+        this.formatTechInds(response.data.volatile, volumeInd, 'Most Volatile')
         this.setState({gainHigh: gainHigh, loseLow: loseLow, volumeInd: volumeInd})
       },
       error => {
