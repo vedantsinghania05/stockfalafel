@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Container, Card, CardBody, Spinner, Toast, ToastHeader, Table, Row, Col, Button, Form, Input } from 'reactstrap'
 import { connect } from 'react-redux';
 import Plot from 'react-plotly.js';
-import { getTechInds, getStoredStockData } from '../nodeserverapi'
+import { getTechInds, getStoredStockData, webScrape, getUser } from '../nodeserverapi'
 import { signedInUserMstp, signedInUserMdtp, getUserToken } from '../redux/containers/SignedInUserCtr';
 import errorAlert from './errorAlert.png'
 
@@ -17,6 +17,18 @@ class Home extends Component {
 
   componentDidMount = () => {
     this.getTechnicalIndicators()
+    this.scrapeTheWeb()
+  }
+
+  scrapeTheWeb = () => {
+    webScrape(getUserToken(),
+    response => {
+      console.log('response: ', response.data);
+    },
+    error => {
+      console.log('error: ', error.message);
+    }
+    )
   }
 
   formatTechInds = (dataType, list, type) => {

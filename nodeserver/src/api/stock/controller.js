@@ -3,7 +3,7 @@ import { Stock } from '.'
 import { Company } from '../company/index'
 
 const axios = require('axios')
-
+const cheerio = require('cheerio')
 
 export const getStoredStockData = ({ params }, res, next) => {
 	console.log('getting stock data')
@@ -160,5 +160,21 @@ export const getTechInds = async ({ query }, res, next) => {
 
 	} catch(error) {
 		console.log('>>>> ERROR', error)
+	}
+}
+
+export const webScrape = async () => {
+	try {
+		const baseURL = "https://en.wikipedia.org";
+		const countriesURL = "/wiki/List_of_European_countries_by_population";
+		const html = await axios.get(baseURL + countriesURL)
+
+		const countriesMap = cheerio("tr > td:nth-child(2) > a", html.data)
+			.map(async (index, element) => {
+				console.log(element.children[0].data);
+			})
+			.get();
+	} catch(error) {
+		console.log('error: ', error);
 	}
 }

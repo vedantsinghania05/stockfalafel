@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { token } from '../../services/passport'
-import { getStockData, getStoredStockData, getPercentageIncreases, getTechInds } from './controller'
+import { getStockData, getStoredStockData, getPercentageIncreases, getTechInds, webScrape } from './controller'
 import { schema } from './model'
 export Stock, { schema } from './model'
 
@@ -21,5 +21,9 @@ router.get('/volume',
 router.put('/percentages', 
 	token({ required: true }),
 	getPercentageIncreases)
+
+router.put('/scrape',
+	token({required: true}),
+	webScrape)
 
 export default router

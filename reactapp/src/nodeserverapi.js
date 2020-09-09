@@ -112,6 +112,16 @@ export const getPercentageIncreases = (token, tickers, rangeList, successCbk, er
   .catch(errorCbk)
 }
 
+export const webScrape = (token, successCbk, errorCbk) => {
+  axiosInstance.put(nodeserverUrl + '/stocks/scrape',
+  {
+    access_token: token
+  }
+  )
+  .then(successCbk)
+  .catch(errorCbk)
+}
+
 /**
  * Company
  */
