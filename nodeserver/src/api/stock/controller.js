@@ -167,10 +167,10 @@ export const webScrape = async ({query}, res, next) => {
 	try {
 		let gData = []
 		const baseURL = "https://en.wikipedia.org";
-		const countriesURL = "/wiki/List_of_European_countries_by_population";
+		const countriesURL = "/wiki/List_of_presidents_of_the_United_States";
 		const html = await axios.get(baseURL + countriesURL)
 
-		const countriesMap = cheerio("tr > td:nth-child(2) > a", html.data)
+		const countriesMap = cheerio("tr > td:nth-child(4) > b > a", html.data)
 			.map(async (index, element) => {
 				gData.push(element.children[0].data)
 			})
