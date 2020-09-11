@@ -163,18 +163,18 @@ export const getTechInds = async ({ query }, res, next) => {
 	}
 }
 
-export const webScrape = async () => {
+export const webScrape = async ({query}, res, next) => {
 	try {
+		let gData = []
 		const baseURL = "https://en.wikipedia.org";
 		const countriesURL = "/wiki/List_of_European_countries_by_population";
 		const html = await axios.get(baseURL + countriesURL)
 
 		const countriesMap = cheerio("tr > td:nth-child(2) > a", html.data)
 			.map(async (index, element) => {
-				console.log(element.children[0].data);
+				gData.push(element.children[0].data)
 			})
 			.get();
-	} catch(error) {
-		console.log('error: ', error);
-	}
+		return resOk(res, gData)
+	} catch(error) {console.log('error: ', error);}
 }
