@@ -171,11 +171,11 @@ export const webScrape = async ({query}, res, next) => {
 
 		axios.get(baseURL + countriesURL).then(urlResponse => {
 			const $ = cheerio.load(urlResponse.data)
-			$("tr > td:nth-child(4) > b > a").map((i, element) => {
-				const name = $(element).text()
-				const link = $(element).attr('href')
-				gData.push({name: name, link: baseURL + link})
-
+			$("table:nth-child(12) > tbody > tr").map((i, element) => {
+				const pres = $(element).find('td:nth-child(4) > b > a').text()
+				const vp = $(element).find('td:nth-child(8) > a').text()
+				const link = $(element).find('td:nth-child(4) > b > a').attr('href')
+				if (link) gData.push({pres: pres, vp: vp, link: baseURL + link})
 			})
 
 		return resOk(res, gData)
