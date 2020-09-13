@@ -164,17 +164,21 @@ export const getTechInds = async ({ query }, res, next) => {
 }
 
 export const webScrape = async ({query}, res, next) => {
-	try {
+	// try {
 		let gData = []
 		const baseURL = "https://en.wikipedia.org";
 		const countriesURL = "/wiki/List_of_presidents_of_the_United_States";
-		const html = await axios.get(baseURL + countriesURL)
 
-		const countriesMap = cheerio("tr > td:nth-child(4) > b > a", html.data)
-			.map(async (index, element) => {
-				gData.push(element.children[0].data)
+		axios.get(baseURL + countriesURL).then(urlResponse => {
+			const $ = cheerio.load(urlResponse.data)
+			$("tr > td:nth-child(4) > b > a").map((i, element) => {
+				const name = $(element).text()
+				const link = $(element).attr('href')
+				gData.push({name: name, link: baseURL + link})
+
 			})
-			.get();
+
 		return resOk(res, gData)
-	} catch(error) {console.log('error: ', error);}
-}
+		})
+		.catch(next)
+ }
