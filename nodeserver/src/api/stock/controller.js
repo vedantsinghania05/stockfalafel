@@ -166,16 +166,21 @@ export const getTechInds = async ({ query }, res, next) => {
 export const webScrape = async ({query}, res, next) => {
 	// try {
 		let gData = []
-		const baseURL = "https://en.wikipedia.org";
-		const countriesURL = "/wiki/List_of_presidents_of_the_United_States";
+		//const baseURL = "https://en.wikipedia.org";
+		//const countriesURL = "/wiki/List_of_presidents_of_the_United_States";
+		const baseURL = "https://www.zacks.com/stocks/"
 
-		axios.get(baseURL + countriesURL).then(urlResponse => {
+		axios.get(baseURL).then(urlResponse => {
 			const $ = cheerio.load(urlResponse.data)
-			$("table:nth-child(12) > tbody > tr").map((i, element) => {
-				const pres = $(element).find('td:nth-child(4) > b > a').text()
-				const vp = $(element).find('td:nth-child(8) > a').text()
-				const link = $(element).find('td:nth-child(4) > b > a').attr('href')
-				if (link) gData.push({pres: pres, vp: vp, link: baseURL + link})
+			$("section > div:nth-child(8) > table > tbody:nth-child(2) > tr > td:nth-child(2) ").map((i, element) => {
+				//const pres = $(element).find('td:nth-child(4) > b > a').text()
+				//const vp = $(element).find('td:nth-child(8) > a').text()
+				//const link = $(element).find('td:nth-child(4) > b > a').attr('href')
+
+				const topMover = $(element).find('a > span').text()
+				if (topMover) gData.push({ topMover: topMover })
+
+				//if (link) gData.push({pres: pres, vp: vp, link: baseURL + link})
 			})
 
 		return resOk(res, gData)
