@@ -6,7 +6,6 @@
     "axios": "^0.19.2",
     "bootstrap": "^4.4.1",
     "mdi-react": "^7.1.0",
-    "node-sass": "^4.14.1",
     "plotly.js": "^1.54.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
@@ -17,6 +16,7 @@
     "react-smooth-scrollbar": "^8.0.6",
     "reactstrap": "^8.4.1",
     "redux": "^4.0.5",
+    "sass": "^1.53.0",
     "smooth-scrollbar": "^8.5.2"
   },
   "scripts": {

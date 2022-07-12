@@ -6,13 +6,14 @@ import api from './api'
 
 const app = express(apiRoot, api)
 const server = http.createServer(app)
+var config = require('./config.json')
 
 // Initialize mongoose
 mongoose.set('useUnifiedTopology', true) // TODO: vm@040720 - this is still giving a warning with mongoose 5.7. Perhaps an issue that will fixed in the later versions
 mongoose.set('useNewUrlParser', true)
 mongoose.set('useCreateIndex', true)
 mongoose.set('useFindAndModify', false)
-mongoose.connect(mongo.uri)
+mongoose.connect(config.connection_uri)
 mongoose.Promise = Promise
 
 setImmediate(() => {
