@@ -13,13 +13,13 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) =>
     .catch(next)
 
 export const show = ({ params, user }, res, next) => {
-  User.findById(params.id === 'me' ? user.id : params.id)   
+  User.findById(params.id === 'me' ? user.id : params.id)
     .then(user => {
       if (!user) return next(resNotFound('Failed to find user'));
-      return resOk(res, user.view(true) );
+      return resOk(res, user.view(true));
     })
     .catch(next)
-  }
+}
 
 export const create = ({ body }, res, next) => {
   let fields = { email: body.email, password: body.password, creator: body.creator };
@@ -79,7 +79,7 @@ export const update = ({ params, body, user }, res, next) => {
         console.log(user.companies)
 
         return user.save()
-      })  
+      })
       .then(user => {
         if (!user) return next(resInternal('Failed to update user'));
         return resOk(res, user.view(true));
@@ -100,7 +100,7 @@ export const updatePassword = ({ params, body, user }, res, next) =>
       if (!user) return next(resInternal('Failed to update user password'));
       return resOk(res, user.view(true));
     })
-    .catch(next)    
+    .catch(next)
 
 export const destroy = ({ params, user }, res, next) =>
   User.findById(params.id === 'me' ? user.id : params.id)

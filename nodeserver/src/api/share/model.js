@@ -20,7 +20,7 @@ const shareSchema = new Schema({
 
 
 shareSchema.methods = {
-  view (full) {
+  view(full) {
     let view = {}
     view.user = this.user;
     view.company = this.company;
@@ -28,11 +28,11 @@ shareSchema.methods = {
     view.price = this.price
     view.date = this.date
     view.id = this.id
- 
+
     if (full) {
       view.createdAt = this.createdAt;
       view.updatedAt = this.updatedAt;
-    }     
+    }
 
     return view;
   }

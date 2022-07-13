@@ -33,7 +33,7 @@ SidebarLink.defaultProps = {
   icon: '',
   newLink: false,
   route: '/',
-  onClick: () => {},
+  onClick: () => { },
 };
 
 export default SidebarLink;

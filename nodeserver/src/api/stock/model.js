@@ -29,20 +29,20 @@ const stockSchema = new Schema({
 })
 
 stockSchema.methods = {
-  view (full) {
+  view(full) {
     let view = {}
-    view.ticker  = this.ticker;
-    view.date  = this.date;
-    view.open  = this.open;
-    view.high  = this.high;
-    view.low  = this.low;
-    view.close  = this.close;
-    view.volume  = this.volume;
+    view.ticker = this.ticker;
+    view.date = this.date;
+    view.open = this.open;
+    view.high = this.high;
+    view.low = this.low;
+    view.close = this.close;
+    view.volume = this.volume;
 
     if (full) {
       view.createdAt = this.createdAt;
       view.updatedAt = this.updatedAt;
-    }     
+    }
 
     return view;
   }

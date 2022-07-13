@@ -59,7 +59,7 @@ const getUserInfo = user =>
   user && user.info ? user.info : undefined;
 
 const isUserInfo = user =>
-  user && user.info && Object.keys(user.info).length > 0 ? true : false;  
+  user && user.info && Object.keys(user.info).length > 0 ? true : false;
 
 const isSignedIn = user =>
   isUserToken(user) && isUserInfo(user) ? true : false;

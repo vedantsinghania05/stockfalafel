@@ -8,13 +8,13 @@ const cheerio = require('cheerio')
 class Scraper extends Component {
   constructor() {
     super();
-    this.state = {  }
+    this.state = {}
   }
 
-  
+
 
   render() {
-    let {  } = this.state
+    let { } = this.state
     return (
       <Container className='dashboard'>
         <Card>

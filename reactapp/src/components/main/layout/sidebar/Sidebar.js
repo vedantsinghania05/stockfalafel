@@ -20,7 +20,7 @@ const Sidebar = ({
       <Scrollbar className="sidebar__scroll scroll">
         <div className="sidebar__wrapper sidebar__wrapper--desktop">
           <SidebarContent
-            onClick={() => {}}
+            onClick={() => { }}
           />
         </div>
         <div className="sidebar__wrapper sidebar__wrapper--mobile">

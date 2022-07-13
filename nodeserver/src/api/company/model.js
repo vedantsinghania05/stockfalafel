@@ -11,15 +11,15 @@ const companySchema = new Schema({
 })
 
 companySchema.methods = {
-  view (full) {
+  view(full) {
     let view = {}
-    view.ticker  = this.ticker;
+    view.ticker = this.ticker;
     view.id = this.id;
 
     if (full) {
       view.createdAt = this.createdAt;
       view.updatedAt = this.updatedAt;
-    }     
+    }
 
     return view;
   }

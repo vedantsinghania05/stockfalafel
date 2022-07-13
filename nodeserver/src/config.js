@@ -30,7 +30,7 @@ const config = {
       }
     }
   },
-  test: { },
+  test: {},
   development: {
     mongo: {
       uri: 'mongodb://localhost/stockfalafel-dev',

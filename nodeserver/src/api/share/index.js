@@ -7,19 +7,19 @@ export Share, { schema } from './model'
 const router = new Router()
 
 router.post('/',
-master(),
-create)
+  master(),
+  create)
 
 router.get('/',
-token({required: true}),
-getShareByUserId)
+  token({ required: true }),
+  getShareByUserId)
 
 router.delete('/:id',
-token({required: true}),
-destroy)
+  token({ required: true }),
+  destroy)
 
 router.get('/:ticker',
-token({required: true}),
-findRecentPrice)
+  token({ required: true }),
+  findRecentPrice)
 
 export default router

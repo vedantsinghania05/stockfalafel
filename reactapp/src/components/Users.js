@@ -23,10 +23,10 @@ class Users extends Component {
 
   onDelete = (index, id) => {
     const { userList } = this.state
-  
+
     deleteUser(id, getUserToken(),
       response => {
-        if (id===this.props.userInfo.id) {
+        if (id === this.props.userInfo.id) {
           this.props.clearUser();
         } else {
           userList.splice(index, 1);
@@ -60,12 +60,12 @@ class Users extends Component {
                 </div>
 
                 {result && <Alert color="danger">{result}</Alert>}
-                
+
                 <table>
                   <tbody>
                     {userList.map((u, i) => <tr key={i}>
                       <td>{u.email}</td>
-                      <td><Button onClick={()=>this.onDelete(i, u.id)}>x</Button></td>
+                      <td><Button onClick={() => this.onDelete(i, u.id)}>x</Button></td>
                     </tr>)}
                   </tbody>
                 </table>
@@ -74,7 +74,7 @@ class Users extends Component {
             </Card>
           </Col>
         </Row>
-      </Container>      
+      </Container>
     );
   }
 }

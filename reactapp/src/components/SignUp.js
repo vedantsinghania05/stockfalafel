@@ -59,7 +59,7 @@ class SignUp extends Component {
               <h3 className="account__title">
                 <span className="account__logo-main">Stock
                   <span className='account__logo-accent'>Falafel</span>
-                </span>               
+                </span>
               </h3>
               <h4 className="account__subhead subhead">Sign Up</h4>
             </div>

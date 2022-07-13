@@ -18,12 +18,12 @@ router.get('/volume',
 	token({ required: true }),
 	getTechInds)
 
-router.put('/percentages', 
+router.put('/percentages',
 	token({ required: true }),
 	getPercentageIncreases)
 
 router.put('/scrape',
-	token({required: true}),
+	token({ required: true }),
 	webScrape)
 
 export default router

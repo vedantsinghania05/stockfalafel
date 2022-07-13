@@ -7,6 +7,6 @@ export const login = ({ user }, res, next) => {
   return sign(user.id)
     .then(token => {
       return resCreated(res, { token, user: user.view(true) });
-    })    
+    })
     .catch(next)
 }

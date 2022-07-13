@@ -52,7 +52,7 @@ class Router extends Component {
             <PrivateRoute authenticated={this.props.isSignedIn} component={wrappedRoutes} />
           </Switch>
         </main>
-      </MainWrapper>      
+      </MainWrapper>
     );
   }
 }

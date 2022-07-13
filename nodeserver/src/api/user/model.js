@@ -38,22 +38,22 @@ userSchema.pre('save', function (next) {
 })
 
 userSchema.methods = {
-  view (full) {
+  view(full) {
     let view = {}
 
     view.id = this.id;
     view.email = this.email;
     view.companies = this.companies;
- 
+
     if (full) {
       view.createdAt = this.createdAt;
       view.updatedAt = this.updatedAt;
-    }     
+    }
 
     return view;
   },
 
-  authenticate (password) {
+  authenticate(password) {
     return bcrypt.compare(password, this.password).then((valid) => valid ? this : false)
   }
 }

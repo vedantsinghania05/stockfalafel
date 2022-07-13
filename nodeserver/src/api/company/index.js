@@ -6,20 +6,20 @@ export Company, { schema } from './model'
 
 const router = new Router()
 
- router.post('/',
- master(),
- create)
+router.post('/',
+  master(),
+  create)
 
- router.get('/',
- token({ required: true }),
- index)
+router.get('/',
+  token({ required: true }),
+  index)
 
- router.get('/user',
- token({ required: true }),
- getUsersCompanies)
+router.get('/user',
+  token({ required: true }),
+  getUsersCompanies)
 
- router.delete('/:ticker',
- token({ required: true}),
- destroy)
+router.delete('/:ticker',
+  token({ required: true }),
+  destroy)
 
- export default router
+export default router

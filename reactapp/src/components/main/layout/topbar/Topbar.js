@@ -23,8 +23,8 @@ class Topbar extends Component {
             <div className="topbar__logo">
               <span className="account__logo">Stock
                 <span className='account__logo-accent2'>Falafel</span>
-              </span> 
-            </div>           
+              </span>
+            </div>
           </div>
           <div className="topbar__right">
             <TopbarProfile />

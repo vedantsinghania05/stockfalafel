@@ -8,7 +8,7 @@ import Axios from 'axios'
 
 export const create = ({ body }, res, next) => {
   Company.create({ ticker: body.ticker })
-    .then (company => {
+    .then(company => {
       if (!company) return next(resInternal('Failed to create company'))
       return resCreated(res, company)
     })
@@ -17,7 +17,7 @@ export const create = ({ body }, res, next) => {
 
 export const index = ({ query }, res, next) => {
   Company.find()
-    .then (companies => {
+    .then(companies => {
       if (!companies) return next(resInternal('Failed to find companies'))
       return resOk(res, companies)
     })
@@ -34,11 +34,11 @@ export const destroy = ({ params, user }, res, next) => {
     })
     .then(user => {
       if (!user) return next(resInternal('Failed to update user'))
-      return Company.deleteOne({ ticker: params.ticker})
+      return Company.deleteOne({ ticker: params.ticker })
     })
     .then(company => {
       if (!company) return next(resInternal('Failed to delete company'))
-      return Stock.deleteMany({company: params.ticker})
+      return Stock.deleteMany({ company: params.ticker })
     })
     .then(stocks => {
       if (!stocks) return next(resInternal('Failed to delete stocks'))
